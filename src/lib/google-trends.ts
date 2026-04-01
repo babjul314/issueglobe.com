@@ -1,7 +1,4 @@
 import googleTrends from "google-trends-api";
-import { countries } from "@/data/countries";
-import fs from "fs";
-import path from "path";
 
 export interface TrendItem {
   title: string;
@@ -16,17 +13,9 @@ export interface TrendItem {
   relatedQueries: string[];
 }
 
-const CACHE_DIR = path.join(process.cwd(), "cache");
-
-function ensureCacheDir() {
-  if (!fs.existsSync(CACHE_DIR)) {
-    fs.mkdirSync(CACHE_DIR, { recursive: true });
-  }
-}
-
-function getCacheKey(countryCode: string, date: string): string {
-  return `trends_${countryCode}_${date}.json`;
-}
+// 인메모리 캐시 (Vercel 서버리스 환경 호환)
+const memoryCache = new Map<string, { data: TrendItem[]; timestamp: number }>();
+const CACHE_TTL = 60 * 60 * 1000; // 1시간
 
 function slugify(text: string): string {
   return text
@@ -41,20 +30,22 @@ function getToday(): string {
   return new Date().toISOString().split("T")[0];
 }
 
+function getCacheKey(countryCode: string): string {
+  return `${countryCode}_${getToday()}`;
+}
+
 export async function fetchTrendsForCountry(
   countryCode: string
 ): Promise<TrendItem[]> {
-  const today = getToday();
-  const cacheKey = getCacheKey(countryCode, today);
-  const cachePath = path.join(CACHE_DIR, cacheKey);
+  const cacheKey = getCacheKey(countryCode);
+  const cached = memoryCache.get(cacheKey);
 
-  ensureCacheDir();
-
-  // 중복 방지: 오늘 이미 가져온 데이터가 있으면 캐시에서 반환
-  if (fs.existsSync(cachePath)) {
-    const cached = JSON.parse(fs.readFileSync(cachePath, "utf-8"));
-    return cached;
+  // 캐시가 유효하면 반환 (중복 방지)
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data;
   }
+
+  const today = getToday();
 
   try {
     const results = await googleTrends.dailyTrends({
@@ -95,56 +86,12 @@ export async function fetchTrendsForCountry(
       }
     );
 
-    // 캐시 저장
-    fs.writeFileSync(cachePath, JSON.stringify(trends, null, 2));
+    // 인메모리 캐시 저장
+    memoryCache.set(cacheKey, { data: trends, timestamp: Date.now() });
 
     return trends;
   } catch (error) {
     console.error(`Failed to fetch trends for ${countryCode}:`, error);
     return [];
   }
-}
-
-export async function fetchAllTrends(): Promise<Record<string, TrendItem[]>> {
-  const allTrends: Record<string, TrendItem[]> = {};
-
-  // 순차적으로 요청 (rate limiting 방지)
-  for (const country of countries) {
-    allTrends[country.code] = await fetchTrendsForCountry(country.code);
-    // Google Trends rate limit 방지를 위한 딜레이
-    await new Promise((resolve) => setTimeout(resolve, 300));
-  }
-
-  return allTrends;
-}
-
-export function getCachedTrends(countryCode: string): TrendItem[] | null {
-  const today = getToday();
-  const cachePath = path.join(CACHE_DIR, getCacheKey(countryCode, today));
-
-  if (fs.existsSync(cachePath)) {
-    return JSON.parse(fs.readFileSync(cachePath, "utf-8"));
-  }
-  return null;
-}
-
-export function getAllCachedTrends(): Record<string, TrendItem[]> {
-  const today = getToday();
-  const result: Record<string, TrendItem[]> = {};
-
-  ensureCacheDir();
-
-  for (const country of countries) {
-    const cachePath = path.join(
-      CACHE_DIR,
-      getCacheKey(country.code, today)
-    );
-    if (fs.existsSync(cachePath)) {
-      result[country.code] = JSON.parse(
-        fs.readFileSync(cachePath, "utf-8")
-      );
-    }
-  }
-
-  return result;
 }

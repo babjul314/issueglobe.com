@@ -16,7 +16,7 @@ async function getUserCountry(): Promise<string> {
   }
 
   const headersList = await headers();
-  const detected = headersList.get("x-user-country") || headersList.get("x-vercel-ip-country") || "US";
+  const detected = headersList.get("x-vercel-ip-country") || "US";
   const valid = countries.find((c) => c.code === detected);
   return valid ? detected : "US";
 }
