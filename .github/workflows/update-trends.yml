@@ -1,0 +1,43 @@
+name: Update Trends
+
+on:
+  schedule:
+    # 30분마다 실행
+    - cron: '*/30 * * * *'
+  workflow_dispatch: # 수동 실행도 가능
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install @anthropic-ai/sdk
+
+      - name: Fetch trends and generate content
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node scripts/update-trends.mjs
+
+      - name: Check for changes
+        id: changes
+        run: |
+          git diff --quiet src/data/trending-content.ts || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Commit and push
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "IssueGlobe Bot"
+          git config user.email "bot@issueglobe.com"
+          git add src/data/trending-content.ts
+          git commit -m "auto: update trends $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push
