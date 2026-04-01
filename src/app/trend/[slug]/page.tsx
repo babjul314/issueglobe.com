@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { countries, getCountryByCode } from "@/data/countries";
 import { fetchTrendsForCountry, TrendItem } from "@/lib/google-trends";
+import Comments from "@/components/Comments";
 
 export const dynamic = "force-dynamic";
 
@@ -357,6 +358,14 @@ export default async function TrendPage({ params }: PageProps) {
           </div>
         </div>
       </div>
+
+      {/* Comments */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <div className="rounded-2xl bg-white border border-gray-200 p-6 shadow-sm">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Comments</h2>
+          <Comments term={trend.title} />
+        </div>
+      </section>
 
       {/* JSON-LD */}
       <script
