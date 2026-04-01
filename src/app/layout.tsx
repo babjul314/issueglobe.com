@@ -66,6 +66,17 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="canonical" href="https://issueglobe.com" />
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-RCWG0H9J0N" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-RCWG0H9J0N');
+            `,
+          }}
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 text-gray-900`}
