@@ -92,15 +92,27 @@ async function fetchTrendsFromRSS(countryCode: string): Promise<TrendItem[]> {
   return items;
 }
 
+function decodeHtmlEntities(text: string): string {
+  return text
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(parseInt(dec, 10)));
+}
+
 function extractTag(xml: string, tag: string): string | null {
   // CDATA 지원
   const cdataRegex = new RegExp(`<${tag}><!\\[CDATA\\[([\\s\\S]*?)\\]\\]></${tag}>`);
   const cdataMatch = cdataRegex.exec(xml);
-  if (cdataMatch) return cdataMatch[1].trim();
+  if (cdataMatch) return decodeHtmlEntities(cdataMatch[1].trim());
 
   const regex = new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`);
   const m = regex.exec(xml);
-  return m ? m[1].trim() : null;
+  return m ? decodeHtmlEntities(m[1].trim()) : null;
 }
 
 export async function fetchTrendsForCountry(
