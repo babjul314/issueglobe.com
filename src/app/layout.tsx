@@ -94,14 +94,14 @@ export default function RootLayout({
         <link rel="alternate" hrefLang="da" href="https://issueglobe.com/country/dk" />
         <link rel="alternate" hrefLang="nb" href="https://issueglobe.com/country/no" />
         <link rel="alternate" hrefLang="hi" href="https://issueglobe.com/country/in" />
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-RCWG0H9J0N" />
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-C6D6ME59JT" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-              gtag('config', 'G-RCWG0H9J0N');
+              gtag('config', 'G-C6D6ME59JT');
             `,
           }}
         />
