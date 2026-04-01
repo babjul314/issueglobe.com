@@ -30,6 +30,14 @@ export const metadata: Metadata = {
     "trending searches",
     "viral topics",
     "what is trending",
+    "실시간 검색어",
+    "トレンド",
+    "tendances",
+    "tendencias",
+    "Suchtrends",
+    "trending oggi",
+    "assuntos do momento",
+    "熱門搜尋",
   ],
   openGraph: {
     type: "website",
@@ -66,6 +74,26 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="canonical" href="https://issueglobe.com" />
+        <link rel="alternate" hrefLang="x-default" href="https://issueglobe.com" />
+        <link rel="alternate" hrefLang="ko" href="https://issueglobe.com/country/kr" />
+        <link rel="alternate" hrefLang="ja" href="https://issueglobe.com/country/jp" />
+        <link rel="alternate" hrefLang="en" href="https://issueglobe.com/country/us" />
+        <link rel="alternate" hrefLang="de" href="https://issueglobe.com/country/de" />
+        <link rel="alternate" hrefLang="fr" href="https://issueglobe.com/country/fr" />
+        <link rel="alternate" hrefLang="es" href="https://issueglobe.com/country/es" />
+        <link rel="alternate" hrefLang="pt" href="https://issueglobe.com/country/br" />
+        <link rel="alternate" hrefLang="it" href="https://issueglobe.com/country/it" />
+        <link rel="alternate" hrefLang="nl" href="https://issueglobe.com/country/nl" />
+        <link rel="alternate" hrefLang="sv" href="https://issueglobe.com/country/se" />
+        <link rel="alternate" hrefLang="pl" href="https://issueglobe.com/country/pl" />
+        <link rel="alternate" hrefLang="zh-TW" href="https://issueglobe.com/country/tw" />
+        <link rel="alternate" hrefLang="zh-HK" href="https://issueglobe.com/country/hk" />
+        <link rel="alternate" hrefLang="ar" href="https://issueglobe.com/country/ae" />
+        <link rel="alternate" hrefLang="he" href="https://issueglobe.com/country/il" />
+        <link rel="alternate" hrefLang="fi" href="https://issueglobe.com/country/fi" />
+        <link rel="alternate" hrefLang="da" href="https://issueglobe.com/country/dk" />
+        <link rel="alternate" hrefLang="nb" href="https://issueglobe.com/country/no" />
+        <link rel="alternate" hrefLang="hi" href="https://issueglobe.com/country/in" />
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-RCWG0H9J0N" />
         <script
           dangerouslySetInnerHTML={{
