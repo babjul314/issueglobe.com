@@ -1,140 +1,116 @@
-import { countries, getCountriesByRegion } from "@/data/countries";
-import { fetchTrendsForCountry, TrendItem } from "@/lib/google-trends";
-import CountryCard from "@/components/CountryCard";
+import { headers, cookies } from "next/headers";
+import Link from "next/link";
+import { countries, getCountryByCode } from "@/data/countries";
+import { fetchTrendsForCountry } from "@/lib/google-trends";
 import TrendCard from "@/components/TrendCard";
+import CountrySelector from "@/components/CountrySelector";
 
-export const revalidate = 3600; // ISR: 1시간마다 재생성
+export const dynamic = "force-dynamic"; // 접속 국가에 따라 동적 렌더링
 
-async function getTopTrends(): Promise<{
-  trendsByCountry: Record<string, TrendItem[]>;
-  globalTop: TrendItem[];
-}> {
-  const trendsByCountry: Record<string, TrendItem[]> = {};
-  const allTrends: TrendItem[] = [];
-
-  // 주요 5개국만 서버에서 프리로드 (빌드 시간 절약)
-  const priorityCountries = ["US", "GB", "JP", "KR", "DE"];
-
-  for (const code of priorityCountries) {
-    try {
-      const trends = await fetchTrendsForCountry(code);
-      trendsByCountry[code] = trends;
-      allTrends.push(...trends);
-    } catch {
-      trendsByCountry[code] = [];
-    }
+async function getUserCountry(): Promise<string> {
+  const cookieStore = await cookies();
+  const override = cookieStore.get("preferred-country")?.value;
+  if (override) {
+    const valid = countries.find((c) => c.code === override);
+    if (valid) return override;
   }
 
-  // 트래픽 기준 상위 20개 글로벌 트렌드
-  const globalTop = allTrends
-    .sort((a, b) => {
-      const aNum = parseInt(a.traffic.replace(/[^0-9]/g, "")) || 0;
-      const bNum = parseInt(b.traffic.replace(/[^0-9]/g, "")) || 0;
-      return bNum - aNum;
-    })
-    .slice(0, 20);
-
-  return { trendsByCountry, globalTop };
+  const headersList = await headers();
+  const detected = headersList.get("x-user-country") || headersList.get("x-vercel-ip-country") || "US";
+  const valid = countries.find((c) => c.code === detected);
+  return valid ? detected : "US";
 }
 
 export default async function HomePage() {
-  const { trendsByCountry, globalTop } = await getTopTrends();
-  const regions = getCountriesByRegion();
+  const countryCode = await getUserCountry();
+  const country = getCountryByCode(countryCode)!;
+  const trends = await fetchTrendsForCountry(country.code);
+
+  const ui = country.ui;
 
   return (
     <>
-      {/* Hero */}
-      <section className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 text-white">
+      {/* Hero - 접속 국가 맞춤 */}
+      <section
+        className="relative text-white"
+        style={{
+          background: `linear-gradient(135deg, ${country.color}ee, ${country.color}88, #1e1b4b)`,
+        }}
+      >
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+          <div className="flex justify-end mb-6">
+            <CountrySelector currentCode={country.code} />
+          </div>
+
           <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-6">
-              What the World is
-              <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-pink-300">
-                Searching For
-              </span>
+            <span className="text-7xl md:text-9xl mb-6 block">{country.flag}</span>
+            <h1 className="text-3xl md:text-5xl font-black tracking-tight mb-4">
+              {ui.hero}
             </h1>
-            <p className="text-lg md:text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Real-time trending topics from 30 countries. Discover global
-              issues, viral stories, and what matters most around the world
-              — updated daily.
+            <p className="text-lg md:text-xl text-white/80 mb-6 max-w-2xl mx-auto">
+              {ui.heroSub}
             </p>
-            <div className="flex flex-wrap justify-center gap-2">
-              {countries.slice(0, 15).map((c) => (
-                <span
-                  key={c.code}
-                  className="text-2xl hover:scale-125 transition-transform cursor-default"
-                  title={c.name}
-                >
-                  {c.flag}
-                </span>
-              ))}
-              <span className="text-2xl text-blue-200">+15</span>
+            <div className="flex items-center justify-center gap-2">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+              <span className="text-sm text-white/70">{ui.live}</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Global Top Trends */}
-      <section id="trending" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      {/* 해당 국가 트렌드 */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="mb-10">
           <h2 className="text-3xl font-black text-gray-900">
-            Global Top Trends
+            {ui.trendingIn}
           </h2>
           <p className="text-gray-500 mt-2">
-            The most searched topics across the world right now
+            {new Date().toLocaleDateString(country.locale, {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
           </p>
         </div>
 
         <div className="grid gap-4">
-          {globalTop.length > 0 ? (
-            globalTop.map((trend, i) => (
+          {trends.length > 0 ? (
+            trends.map((trend, i) => (
               <TrendCard key={trend.slug} trend={trend} rank={i + 1} />
             ))
           ) : (
             <div className="text-center py-20 text-gray-400">
-              <p className="text-lg">Loading trends...</p>
-              <p className="text-sm mt-2">
-                Trends will appear once data is fetched from Google Trends.
-              </p>
+              <p className="text-4xl mb-4">{country.flag}</p>
+              <p className="text-lg">{ui.noTrends}</p>
             </div>
           )}
         </div>
       </section>
 
-      {/* Countries by Region */}
-      <section id="regions" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="mb-10">
-          <h2 className="text-3xl font-black text-gray-900">
-            Explore by Region
-          </h2>
-          <p className="text-gray-500 mt-2">
-            Browse trending topics by country and region
-          </p>
+      {/* 다른 나라 탐색 */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-20">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          {ui.exploreOther}
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          {countries
+            .filter((c) => c.code !== country.code)
+            .map((c) => (
+              <Link
+                key={c.code}
+                href={`/country/${c.code.toLowerCase()}`}
+                className="flex items-center gap-2 rounded-xl bg-white border border-gray-200 px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all"
+              >
+                <span className="text-xl">{c.flag}</span>
+                <span className="truncate">{c.name}</span>
+              </Link>
+            ))}
         </div>
-
-        {Object.entries(regions).map(([region, regionCountries]) => (
-          <div key={region} id={region.toLowerCase().replace(/\s/g, "-")} className="mb-12">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <span className="w-1 h-6 bg-blue-500 rounded-full" />
-              {region}
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {regionCountries.map((country) => (
-                <CountryCard
-                  key={country.code}
-                  country={country}
-                  trendCount={trendsByCountry[country.code]?.length || 0}
-                  topTrend={trendsByCountry[country.code]?.[0]?.title}
-                />
-              ))}
-            </div>
-          </div>
-        ))}
       </section>
 
-      {/* SEO: JSON-LD 구조화 데이터 */}
+      {/* SEO: JSON-LD */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -143,8 +119,7 @@ export default async function HomePage() {
             "@type": "WebSite",
             name: "IssueGlobe",
             url: "https://issueglobe.com",
-            description:
-              "Real-time trending topics from 30 countries around the world.",
+            description: `Real-time trending topics in ${country.name} and 30 countries around the world.`,
             potentialAction: {
               "@type": "SearchAction",
               target: "https://issueglobe.com/search?q={search_term_string}",
