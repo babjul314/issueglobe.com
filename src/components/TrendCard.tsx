@@ -38,11 +38,15 @@ export default function TrendCard({ trend, rank }: TrendCardProps) {
             {trend.title}
           </h3>
 
-          {trend.description && (
+          {trend.summary ? (
+            <p className="text-sm text-gray-500 mt-1 line-clamp-2">
+              {trend.summary}
+            </p>
+          ) : trend.description ? (
             <p className="text-sm text-gray-500 mt-1 line-clamp-2">
               {trend.description}
             </p>
-          )}
+          ) : null}
 
           {trend.relatedQueries.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-2">

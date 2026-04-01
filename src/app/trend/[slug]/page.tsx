@@ -144,8 +144,38 @@ export default async function TrendPage({ params }: PageProps) {
           </div>
         )}
 
-        {/* Description */}
-        {trend.description && (
+        {/* Summary */}
+        {trend.summary && (
+          <div className="rounded-2xl bg-blue-50 border border-blue-100 p-6 mb-8">
+            <h2 className="text-sm font-bold text-blue-800 uppercase tracking-wide mb-2">Summary</h2>
+            <p className="text-lg text-blue-900 leading-relaxed font-medium">
+              {trend.summary}
+            </p>
+          </div>
+        )}
+
+        {/* Detail */}
+        {trend.detail && (
+          <div className="prose prose-lg max-w-none mb-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-3">Detail</h2>
+            <p className="text-gray-700 leading-relaxed">
+              {trend.detail}
+            </p>
+          </div>
+        )}
+
+        {/* Reactions */}
+        {trend.reactions && (
+          <div className="rounded-2xl bg-amber-50 border border-amber-100 p-6 mb-8">
+            <h2 className="text-sm font-bold text-amber-800 uppercase tracking-wide mb-2">Real-time Reactions</h2>
+            <p className="text-amber-900 leading-relaxed">
+              {trend.reactions}
+            </p>
+          </div>
+        )}
+
+        {/* Description (fallback if no summary) */}
+        {!trend.summary && trend.description && (
           <div className="prose prose-lg max-w-none mb-8">
             <p className="text-xl text-gray-700 leading-relaxed">
               {trend.description}

@@ -1,5 +1,3 @@
-import googleTrends from "google-trends-api";
-
 export interface TrendItem {
   title: string;
   slug: string;
@@ -11,6 +9,9 @@ export interface TrendItem {
   country: string;
   date: string;
   relatedQueries: string[];
+  summary: string;
+  detail: string;
+  reactions: string;
 }
 
 // 인메모리 캐시 (Vercel 서버리스 환경 호환)
@@ -20,10 +21,11 @@ const CACHE_TTL = 60 * 60 * 1000; // 1시간
 function slugify(text: string): string {
   return text
     .toLowerCase()
-    .replace(/[^a-z0-9가-힣ぁ-んァ-ヶ亜-熙\s-]/g, "")
+    .replace(/[^a-z0-9가-힣ぁ-んァ-ヶ亜-熙\u0600-\u06FF\u0590-\u05FF\s-]/g, "")
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
-    .trim();
+    .trim()
+    .slice(0, 80);
 }
 
 function getToday(): string {
@@ -34,64 +36,120 @@ function getCacheKey(countryCode: string): string {
   return `${countryCode}_${getToday()}`;
 }
 
+// Google Trends RSS 피드에서 트렌드 가져오기
+async function fetchTrendsFromRSS(countryCode: string): Promise<TrendItem[]> {
+  const today = getToday();
+  const url = `https://trends.google.com/trending/rss?geo=${countryCode}`;
+
+  const res = await fetch(url, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (compatible; IssueGlobe/1.0)",
+    },
+    next: { revalidate: 3600 },
+  });
+
+  if (!res.ok) {
+    console.error(`RSS fetch failed for ${countryCode}: ${res.status}`);
+    return [];
+  }
+
+  const xml = await res.text();
+
+  // RSS XML 파싱
+  const items: TrendItem[] = [];
+  const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+  let match;
+
+  while ((match = itemRegex.exec(xml)) !== null) {
+    const itemXml = match[1];
+
+    const title = extractTag(itemXml, "title") || "";
+    const traffic = extractTag(itemXml, "ht:approx_traffic") || "N/A";
+    const newsUrl = extractTag(itemXml, "ht:news_item_url") || "";
+    const newsTitle = extractTag(itemXml, "ht:news_item_title") || "";
+    const newsSource = extractTag(itemXml, "ht:news_item_source") || "";
+    const pictureUrl = extractTag(itemXml, "ht:picture") || "";
+
+    if (title) {
+      items.push({
+        title,
+        slug: `${countryCode.toLowerCase()}-${slugify(title)}-${today}`,
+        traffic,
+        description: newsTitle,
+        source: newsSource,
+        sourceUrl: newsUrl,
+        imageUrl: pictureUrl,
+        country: countryCode,
+        date: today,
+        relatedQueries: [],
+        summary: "",
+        detail: "",
+        reactions: "",
+      });
+    }
+  }
+
+  return items;
+}
+
+function extractTag(xml: string, tag: string): string | null {
+  // CDATA 지원
+  const cdataRegex = new RegExp(`<${tag}><!\\[CDATA\\[([\\s\\S]*?)\\]\\]></${tag}>`);
+  const cdataMatch = cdataRegex.exec(xml);
+  if (cdataMatch) return cdataMatch[1].trim();
+
+  const regex = new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`);
+  const m = regex.exec(xml);
+  return m ? m[1].trim() : null;
+}
+
 export async function fetchTrendsForCountry(
   countryCode: string
 ): Promise<TrendItem[]> {
   const cacheKey = getCacheKey(countryCode);
   const cached = memoryCache.get(cacheKey);
 
-  // 캐시가 유효하면 반환 (중복 방지)
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
     return cached.data;
   }
 
-  const today = getToday();
+  // 미리 작성된 콘텐츠 가져오기 (동적 import로 순환 참조 방지)
+  let preloaded: TrendItem[] = [];
+  try {
+    const { getPreloadedTrends } = await import("@/data/trending-content");
+    preloaded = getPreloadedTrends(countryCode);
+  } catch {
+    // preloaded 없으면 무시
+  }
 
   try {
-    const results = await googleTrends.dailyTrends({
-      geo: countryCode,
-      trendDate: new Date(),
-    });
+    const rssItems = await fetchTrendsFromRSS(countryCode);
 
-    const parsed = JSON.parse(results);
-    const trendingSearches =
-      parsed.default?.trendingSearchesDays?.[0]?.trendingSearches || [];
-
-    const trends: TrendItem[] = trendingSearches.map(
-      (item: {
-        title: { query: string };
-        formattedTraffic: string;
-        articles?: {
-          title: string;
-          source: string;
-          url: string;
-          image?: { newsUrl: string };
-        }[];
-        relatedQueries?: { query: string }[];
-      }) => {
-        const article = item.articles?.[0];
+    // RSS 데이터와 미리 작성된 콘텐츠 병합
+    const merged = rssItems.map((rssItem) => {
+      const enriched = preloaded.find(
+        (p) => p.title.toLowerCase() === rssItem.title.toLowerCase()
+      );
+      if (enriched) {
         return {
-          title: item.title.query,
-          slug: `${countryCode.toLowerCase()}-${slugify(item.title.query)}-${today}`,
-          traffic: item.formattedTraffic || "N/A",
-          description: article?.title || "",
-          source: article?.source || "",
-          sourceUrl: article?.url || "",
-          imageUrl: article?.image?.newsUrl || "",
-          country: countryCode,
-          date: today,
-          relatedQueries:
-            item.relatedQueries?.map((q: { query: string }) => q.query) || [],
+          ...rssItem,
+          summary: enriched.summary,
+          detail: enriched.detail,
+          reactions: enriched.reactions,
+          relatedQueries: enriched.relatedQueries.length > 0 ? enriched.relatedQueries : rssItem.relatedQueries,
+          description: enriched.description || rssItem.description,
         };
       }
-    );
+      return rssItem;
+    });
 
-    // 인메모리 캐시 저장
-    memoryCache.set(cacheKey, { data: trends, timestamp: Date.now() });
-
-    return trends;
+    const result = merged.length > 0 ? merged : preloaded;
+    if (result.length > 0) {
+      memoryCache.set(cacheKey, { data: result, timestamp: Date.now() });
+    }
+    return result;
   } catch (error) {
     console.error(`Failed to fetch trends for ${countryCode}:`, error);
-    return [];
+    return preloaded;
   }
 }
