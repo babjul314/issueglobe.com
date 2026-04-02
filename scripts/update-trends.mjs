@@ -127,10 +127,12 @@ TRENDS:
 ${trendList}
 
 For EACH trend, write in ${lang === "en" ? "English" : `the native language of ${countryName} (${lang})`}:
-1. summary: 1-2 sentence overview (what happened)
-2. detail: 3-5 sentences in-depth explanation (context, background, impact)
-3. reactions: 2-3 sentences about public/social media reactions
-4. relatedQueries: 3 related search terms people might search
+1. summary: 1 sentence - what happened in one line
+2. detail: 5 lines explaining the key facts. Line 1: what happened. Line 2: who is involved. Line 3: why it matters. Line 4: current status. Line 5: what to expect next. Use simple clear language.
+3. reactions: 1-2 sentences of public reaction
+4. relatedQueries: 3 related search terms
+
+IMPORTANT: Do NOT use curly/smart quotes. Use only straight quotes.
 
 Return ONLY valid JSON array, no markdown:
 [{"title":"...","summary":"...","detail":"...","reactions":"...","relatedQueries":["...","...","..."]}]`;
