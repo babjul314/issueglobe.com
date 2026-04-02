@@ -20,7 +20,14 @@ async function findTrendBySlug(slug: string): Promise<TrendItem | null> {
   if (!country) return null;
 
   const trends = await fetchTrendsForCountry(country.code);
-  return trends.find((t) => t.slug === decoded || t.slug === slug) || null;
+
+  // 정확한 매칭
+  const exact = trends.find((t) => t.slug === decoded || t.slug === slug);
+  if (exact) return exact;
+
+  // 날짜 제외 부분 매칭 (slug 날짜가 변경되어도 찾을 수 있도록)
+  const slugWithoutDate = decoded.replace(/-\d{4}-\d{2}-\d{2}$/, "");
+  return trends.find((t) => t.slug.replace(/-\d{4}-\d{2}-\d{2}$/, "") === slugWithoutDate) || null;
 }
 
 
