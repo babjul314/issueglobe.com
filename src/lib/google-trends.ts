@@ -36,6 +36,51 @@ function getCacheKey(countryCode: string): string {
   return `${countryCode}_${getToday()}`;
 }
 
+// 나라별 허용 도메인 (해당 나라 언론사만 허용)
+const COUNTRY_DOMAINS: Record<string, string[]> = {
+  US: [".com", ".org", ".net", ".us", ".gov"],
+  GB: [".co.uk", ".uk", ".bbc.", ".guardian.", ".telegraph."],
+  KR: [".kr", ".daum.", ".naver.", ".chosun.", ".joins.", ".donga.", ".hankyung.", ".mk.", ".newsis.", ".ytn.", ".sbs.", ".kbs.", ".mbc."],
+  JP: [".jp", ".yahoo.co.jp", ".nhk.", ".asahi.", ".nikkei.", ".mainichi."],
+  DE: [".de", ".tagesschau.", ".spiegel.", ".bild.", ".zeit.", ".welt.", ".handelsblatt.", ".n-tv."],
+  FR: [".fr", ".lemonde.", ".lefigaro.", ".leparisien.", ".ouest-france.", ".bfmtv."],
+  IT: [".it", ".corriere.", ".gazzetta.", ".repubblica.", ".sky.it", ".ansa."],
+  ES: [".es", ".elpais.", ".elmundo.", ".marca.", ".lavanguardia.", ".abc.es"],
+  BR: [".br", ".globo.", ".uol.", ".folha.", ".estadao."],
+  IN: [".in", ".indiatimes.", ".ndtv.", ".thehindu.", ".espn.in", ".hindustantimes."],
+  AU: [".au", ".com.au", ".abc.net.au", ".smh.", ".news.com.au"],
+  CA: [".ca", ".cbc.", ".globalnews.", ".ctvnews.", ".thestar."],
+  NL: [".nl", ".nos.", ".rtv.", ".telegraaf.", ".nu.nl", ".volkskrant."],
+  TW: [".tw", ".ltn.", ".udn.", ".chinatimes.", ".ettoday."],
+  SG: [".sg", ".straitstimes.", ".channelnewsasia."],
+  AE: [".ae", "gulfnews.", "khaleejtimes.", "thenationalnews."],
+  SA: [".sa", "arabnews.", "saudigazette."],
+  CH: [".ch", "swissinfo.", "nzz."],
+  SE: [".se", "svd.", "dn.se", "aftonbladet."],
+  NO: [".no", "nrk.", "vg.no", "dagbladet."],
+  DK: [".dk", "dr.dk", "berlingske.", "politiken."],
+  BE: [".be", "rtbf.", "vrt.", "standaard."],
+  AT: [".at", "orf.", "derstandard.", "kurier."],
+  IE: [".ie", "rte.", "irishtimes.", "independent.ie"],
+  NZ: [".nz", "stuff.co.nz", "nzherald."],
+  FI: [".fi", "yle.", "hs.fi", "iltalehti."],
+  PL: [".pl", "tvn24.", "onet.", "wp.pl", "gazeta.pl"],
+  IL: [".il", "haaretz.", "timesofisrael.", "jpost."],
+  HK: [".hk", "scmp.", "mingpao.", "hk01."],
+  MX: [".mx", "eluniversal.", "milenio.", "excelsior."],
+};
+
+function isSourceFromCountry(newsUrl: string, countryCode: string): boolean {
+  if (!newsUrl) return true; // URL 없으면 통과
+  const domains = COUNTRY_DOMAINS[countryCode];
+  if (!domains) return true; // 도메인 목록 없으면 통과
+  // 글로벌 소스는 모든 나라에서 허용
+  const globalDomains = [".reuters.", ".apnews.", "bbc.com", ".cnn.", ".aljazeera.", ".espn.", ".goal.com", ".si.com"];
+  const url = newsUrl.toLowerCase();
+  if (globalDomains.some((d) => url.includes(d))) return true;
+  return domains.some((d) => url.includes(d));
+}
+
 // Google Trends RSS 피드에서 트렌드 가져오기
 async function fetchTrendsFromRSS(countryCode: string): Promise<TrendItem[]> {
   const today = getToday();
@@ -70,7 +115,8 @@ async function fetchTrendsFromRSS(countryCode: string): Promise<TrendItem[]> {
     const newsSource = extractTag(itemXml, "ht:news_item_source") || "";
     const pictureUrl = extractTag(itemXml, "ht:picture") || "";
 
-    if (title) {
+    // 출처가 다른 나라 언론사면 제외
+    if (title && isSourceFromCountry(newsUrl, countryCode)) {
       items.push({
         title,
         slug: `${countryCode.toLowerCase()}-${slugify(title)}-${today}`,

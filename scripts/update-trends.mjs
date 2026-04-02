@@ -83,6 +83,26 @@ function slugify(text) {
     .slice(0, 80);
 }
 
+// 해당 나라 언론사인지 확인 (다른 나라 출처 제거)
+const COUNTRY_DOMAINS = {
+  US: [".com", ".org", ".us"], GB: [".co.uk", ".uk", ".bbc."], KR: [".kr", ".daum.", ".naver.", ".chosun.", ".joins.", ".donga.", ".mk.", ".newsis.", ".ytn."],
+  JP: [".jp", ".nhk.", ".asahi.", ".nikkei."], DE: [".de", ".tagesschau.", ".spiegel.", ".bild.", ".zeit."], FR: [".fr", ".lemonde.", ".lefigaro.", ".leparisien."],
+  IT: [".it", ".corriere.", ".gazzetta.", ".repubblica."], ES: [".es", ".elpais.", ".elmundo.", ".marca."], BR: [".br", ".globo.", ".uol.", ".folha."],
+  IN: [".in", ".indiatimes.", ".ndtv.", ".thehindu."], AU: [".au", ".smh.", ".news.com.au"], CA: [".ca", ".cbc.", ".globalnews."],
+  NL: [".nl", ".nos.", ".telegraaf."], TW: [".tw", ".ltn.", ".udn."], SG: [".sg", ".straitstimes."], AE: [".ae", "gulfnews."],
+  SA: [".sa", "arabnews."], SE: [".se"], NO: [".no"], DK: [".dk"], BE: [".be"], AT: [".at"], IE: [".ie"], NZ: [".nz"],
+  FI: [".fi"], PL: [".pl"], IL: [".il"], HK: [".hk", "scmp."], MX: [".mx"], CH: [".ch"],
+};
+const GLOBAL_DOMAINS = [".reuters.", ".apnews.", "bbc.com", ".cnn.", ".espn.", ".goal.com", ".si.com"];
+function isSourceFromCountry(url, code) {
+  if (!url) return true;
+  const domains = COUNTRY_DOMAINS[code];
+  if (!domains) return true;
+  const u = url.toLowerCase();
+  if (GLOBAL_DOMAINS.some(d => u.includes(d))) return true;
+  return domains.some(d => u.includes(d));
+}
+
 async function fetchRSS(countryCode) {
   const url = `https://trends.google.com/trending/rss?geo=${countryCode}`;
   try {
@@ -103,7 +123,7 @@ async function fetchRSS(countryCode) {
       const newsTitle = extractTag(itemXml, "ht:news_item_title") || "";
       const newsSource = extractTag(itemXml, "ht:news_item_source") || "";
       const pictureUrl = extractTag(itemXml, "ht:picture") || "";
-      if (title) {
+      if (title && isSourceFromCountry(newsUrl, countryCode)) {
         items.push({ title, traffic, newsUrl, newsTitle, newsSource, pictureUrl });
       }
     }
