@@ -226,20 +226,8 @@ export async function fetchTrendsForCountry(
       return rssItem;
     });
 
-    // enriched 콘텐츠가 있는 항목 수 확인
-    const enrichedCount = merged.filter((m) => m.detail).length;
-
-    // preloaded에 상세 콘텐츠가 있고 RSS 매칭이 부족하면 preloaded 우선
-    // RSS 항목에 preloaded 콘텐츠를 앞에 추가
-    let result: TrendItem[];
-    if (preloaded.length > 0 && preloaded[0].detail && enrichedCount < 2) {
-      // preloaded를 메인으로, RSS 중 매칭 안 된 것만 뒤에 추가
-      const preloadedTitles = new Set(preloaded.map((p) => p.title.toLowerCase()));
-      const extraRss = merged.filter((m) => !m.detail && !preloadedTitles.has(m.title.toLowerCase()));
-      result = [...preloaded, ...extraRss];
-    } else {
-      result = merged.length > 0 ? merged : preloaded;
-    }
+    // RSS 우선! preloaded는 상세 내용 보충용으로만 사용
+    const result = merged.length > 0 ? merged : preloaded;
 
     if (result.length > 0) {
       memoryCache.set(cacheKey, { data: result, timestamp: Date.now() });
