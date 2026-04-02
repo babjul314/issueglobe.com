@@ -6,6 +6,7 @@ import { countries, getCountryByCode } from "@/data/countries";
 import { fetchTrendsForCountry, TrendItem } from "@/lib/google-trends";
 import Comments from "@/components/Comments";
 import AutoTranslate from "@/components/AutoTranslate";
+import YouTubeVideos from "@/components/YouTubeVideos";
 
 export const dynamic = "force-dynamic";
 
@@ -384,6 +385,13 @@ export default async function TrendPage({ params }: PageProps) {
           </div>
         </div>
       </div>
+
+      {/* YouTube Videos */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+        <div className="rounded-2xl bg-white border border-gray-200 p-6 shadow-sm">
+          <YouTubeVideos query={trend.title} />
+        </div>
+      </section>
 
       {/* Comments */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">

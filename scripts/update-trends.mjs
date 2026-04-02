@@ -164,12 +164,12 @@ ${trendList}
 Write in ${lang === "en" ? "English" : `the native language of ${countryName} (${lang})`}:
 
 For EACH trend:
-1. summary: 1 casual sentence - like a text message to a friend about what's going on
-2. detail: 5 natural sentences explaining the story (based on the article). Write like chatting with a friend - not a news anchor. Use everyday language. Cover: what happened, who's involved, why people care, what's going on now, and what might happen next.
+1. summary: 1 friendly sentence explaining what's going on (polite/formal tone but easy to read)
+2. detail: 5 natural sentences explaining the story (based on the article). Use polite but conversational language - like a friendly news host, not a textbook. Cover: what happened, who's involved, why people care, what's going on now, and what might happen next.
 3. reactions: 1-2 sentences about how people are reacting online
 4. relatedQueries: 3 related search terms
 
-IMPORTANT: Do NOT use curly/smart quotes. Use only straight quotes (' and "). Sound natural and friendly, not robotic.
+IMPORTANT: Do NOT use curly/smart quotes. Use only straight quotes (' and "). Be friendly and natural but use polite/formal speech (e.g. Korean: 존댓말, Japanese: です/ます).
 
 Return ONLY valid JSON array, no markdown:
 [{"title":"...","summary":"...","detail":"...","reactions":"...","relatedQueries":["...","...","..."]}]`;
