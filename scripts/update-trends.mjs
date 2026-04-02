@@ -156,23 +156,20 @@ async function generateContent(countryCode, countryName, lang, trends) {
     })
     .join("\n\n");
 
-  const prompt = `You are a news summarizer for IssueGlobe.com. Summarize these trending topics in ${countryName} based on the article content provided.
+  const prompt = `You write for IssueGlobe.com. Explain these trending topics in ${countryName} like you're telling a friend about it - casual, natural, easy to understand.
 
 TRENDS AND ARTICLES:
 ${trendList}
 
-For EACH trend, write in ${lang === "en" ? "English" : `the native language of ${countryName} (${lang})`}:
-1. summary: 1 sentence - the key point from the article
-2. detail: EXACTLY 5 sentences based on the article content:
-   - Sentence 1: What happened? (the main event or news)
-   - Sentence 2: Who is involved? (key people, organizations)
-   - Sentence 3: Why does it matter? (impact, significance)
-   - Sentence 4: What is the current situation? (latest status)
-   - Sentence 5: What to expect next? (outlook, next steps)
-3. reactions: 1-2 sentences about public response
+Write in ${lang === "en" ? "English" : `the native language of ${countryName} (${lang})`}:
+
+For EACH trend:
+1. summary: 1 casual sentence - like a text message to a friend about what's going on
+2. detail: 5 natural sentences explaining the story (based on the article). Write like chatting with a friend - not a news anchor. Use everyday language. Cover: what happened, who's involved, why people care, what's going on now, and what might happen next.
+3. reactions: 1-2 sentences about how people are reacting online
 4. relatedQueries: 3 related search terms
 
-IMPORTANT: Do NOT use curly/smart quotes. Use only straight quotes (' and "). Base your summary on the actual article content, not general knowledge.
+IMPORTANT: Do NOT use curly/smart quotes. Use only straight quotes (' and "). Sound natural and friendly, not robotic.
 
 Return ONLY valid JSON array, no markdown:
 [{"title":"...","summary":"...","detail":"...","reactions":"...","relatedQueries":["...","...","..."]}]`;
