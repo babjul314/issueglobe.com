@@ -265,6 +265,11 @@ export default async function TrendPage({ params }: PageProps) {
               </section>
             )}
 
+            {/* YouTube Videos - 상세 바로 다음 */}
+            <section className="rounded-2xl bg-white border border-gray-200 p-6 shadow-sm">
+              <YouTubeVideos query={trend.title} />
+            </section>
+
             {/* Source Link */}
             {trend.sourceUrl && (
               <a
@@ -385,13 +390,6 @@ export default async function TrendPage({ params }: PageProps) {
           </div>
         </div>
       </div>
-
-      {/* YouTube Videos */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
-        <div className="rounded-2xl bg-white border border-gray-200 p-6 shadow-sm">
-          <YouTubeVideos query={trend.title} />
-        </div>
-      </section>
 
       {/* Comments */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
