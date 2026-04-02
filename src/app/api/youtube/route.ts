@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (!YOUTUBE_API_KEY) {
-    return NextResponse.json({ videos: [] });
+    return NextResponse.json({ videos: [], error: "NO_API_KEY" });
   }
 
   try {
@@ -19,7 +19,8 @@ export async function GET(request: NextRequest) {
     );
 
     if (!res.ok) {
-      return NextResponse.json({ videos: [] });
+      const errorText = await res.text();
+      return NextResponse.json({ videos: [], error: `YOUTUBE_API_${res.status}`, detail: errorText.slice(0, 200) });
     }
 
     const data = await res.json();
