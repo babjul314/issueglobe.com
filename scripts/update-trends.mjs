@@ -114,25 +114,65 @@ async function fetchRSS(countryCode) {
   }
 }
 
+// 기사 URL에서 텍스트 추출 (최대 500자)
+async function fetchArticleText(url) {
+  if (!url) return "";
+  try {
+    const res = await fetch(url, {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; IssueGlobe/1.0)" },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return "";
+    const html = await res.text();
+    // HTML 태그 제거하고 텍스트만 추출
+    const text = html
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    return text.slice(0, 1500); // 1500자까지만
+  } catch {
+    return "";
+  }
+}
+
 async function generateContent(countryCode, countryName, lang, trends) {
   if (trends.length === 0) return [];
 
+  // 각 트렌드의 기사 내용 가져오기
+  console.log(`    Fetching ${trends.length} articles for ${countryCode}...`);
+  const articlesText = await Promise.all(
+    trends.map(async (t) => {
+      const text = await fetchArticleText(t.newsUrl);
+      return text ? `[Article for "${t.title}"]: ${text.slice(0, 800)}` : "";
+    })
+  );
+
   const trendList = trends
-    .map((t, i) => `${i + 1}. "${t.title}" (${t.traffic} searches) - ${t.newsTitle || "no description"}`)
-    .join("\n");
+    .map((t, i) => {
+      const article = articlesText[i] ? `\n   ${articlesText[i]}` : "";
+      return `${i + 1}. "${t.title}" (${t.traffic} searches) - ${t.newsTitle || "no description"}${article}`;
+    })
+    .join("\n\n");
 
-  const prompt = `You are a news content writer for IssueGlobe.com. Generate content for these trending topics in ${countryName}.
+  const prompt = `You are a news summarizer for IssueGlobe.com. Summarize these trending topics in ${countryName} based on the article content provided.
 
-TRENDS:
+TRENDS AND ARTICLES:
 ${trendList}
 
 For EACH trend, write in ${lang === "en" ? "English" : `the native language of ${countryName} (${lang})`}:
-1. summary: 1 sentence - what happened in one line
-2. detail: 5 lines explaining the key facts. Line 1: what happened. Line 2: who is involved. Line 3: why it matters. Line 4: current status. Line 5: what to expect next. Use simple clear language.
-3. reactions: 1-2 sentences of public reaction
+1. summary: 1 sentence - the key point from the article
+2. detail: EXACTLY 5 sentences based on the article content:
+   - Sentence 1: What happened? (the main event or news)
+   - Sentence 2: Who is involved? (key people, organizations)
+   - Sentence 3: Why does it matter? (impact, significance)
+   - Sentence 4: What is the current situation? (latest status)
+   - Sentence 5: What to expect next? (outlook, next steps)
+3. reactions: 1-2 sentences about public response
 4. relatedQueries: 3 related search terms
 
-IMPORTANT: Do NOT use curly/smart quotes. Use only straight quotes.
+IMPORTANT: Do NOT use curly/smart quotes. Use only straight quotes (' and "). Base your summary on the actual article content, not general knowledge.
 
 Return ONLY valid JSON array, no markdown:
 [{"title":"...","summary":"...","detail":"...","reactions":"...","relatedQueries":["...","...","..."]}]`;
