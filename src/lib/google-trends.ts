@@ -8,6 +8,7 @@ export interface TrendItem {
   imageUrl: string;
   country: string;
   date: string;
+  pubTime: string; // 트렌드 등록 시간 (예: "3시간 전", "14:30")
   relatedQueries: string[];
   summary: string;
   detail: string;
@@ -114,6 +115,19 @@ async function fetchTrendsFromRSS(countryCode: string): Promise<TrendItem[]> {
     const newsTitle = extractTag(itemXml, "ht:news_item_title") || "";
     const newsSource = extractTag(itemXml, "ht:news_item_source") || "";
     const pictureUrl = extractTag(itemXml, "ht:picture") || "";
+    const pubDate = extractTag(itemXml, "pubDate") || "";
+
+    // pubDate를 "~시간 전" 형식으로 변환
+    let pubTime = "";
+    if (pubDate) {
+      const pub = new Date(pubDate);
+      const now = new Date();
+      const diffMs = now.getTime() - pub.getTime();
+      const diffMin = Math.floor(diffMs / 60000);
+      if (diffMin < 60) pubTime = `${diffMin}m ago`;
+      else if (diffMin < 1440) pubTime = `${Math.floor(diffMin / 60)}h ago`;
+      else pubTime = `${Math.floor(diffMin / 1440)}d ago`;
+    }
 
     // 출처가 다른 나라 언론사면 제외
     if (title && isSourceFromCountry(newsUrl, countryCode)) {
@@ -127,6 +141,7 @@ async function fetchTrendsFromRSS(countryCode: string): Promise<TrendItem[]> {
         imageUrl: pictureUrl,
         country: countryCode,
         date: today,
+        pubTime,
         relatedQueries: [],
         summary: "",
         detail: "",
