@@ -1,9 +1,11 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { headers, cookies } from "next/headers";
 import { countries, getCountryByCode } from "@/data/countries";
 import { fetchTrendsForCountry, TrendItem } from "@/lib/google-trends";
 import Comments from "@/components/Comments";
+import AutoTranslate from "@/components/AutoTranslate";
 
 export const dynamic = "force-dynamic";
 
@@ -58,6 +60,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+async function getUserLang(): Promise<string> {
+  const cookieStore = await cookies();
+  const override = cookieStore.get("preferred-country")?.value;
+  if (override) {
+    const c = countries.find((c) => c.code === override);
+    if (c) return c.lang;
+  }
+  const headersList = await headers();
+  const detected = headersList.get("x-vercel-ip-country") || "US";
+  const c = countries.find((c) => c.code === detected);
+  return c?.lang || "en";
+}
+
 export default async function TrendPage({ params }: PageProps) {
   const { slug } = await params;
   const trend = await findTrendBySlug(slug);
@@ -65,12 +80,16 @@ export default async function TrendPage({ params }: PageProps) {
   if (!trend) notFound();
 
   const country = getCountryByCode(trend.country);
+  const userLang = await getUserLang();
   const relatedTrends = country
     ? (await fetchTrendsForCountry(country.code)).filter((t) => t.slug !== slug)
     : [];
 
   return (
     <>
+      {/* 자동 번역 */}
+      <AutoTranslate userLang={userLang} pageLang={country?.lang || "en"} />
+
       {/* Hero Banner */}
       <div
         className="relative"

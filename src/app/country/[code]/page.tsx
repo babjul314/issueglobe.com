@@ -1,18 +1,16 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { headers, cookies } from "next/headers";
 import { countries, getCountryByCode } from "@/data/countries";
 import { fetchTrendsForCountry } from "@/lib/google-trends";
 import TrendCard from "@/components/TrendCard";
+import AutoTranslate from "@/components/AutoTranslate";
 import Link from "next/link";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 interface PageProps {
   params: Promise<{ code: string }>;
-}
-
-export async function generateStaticParams() {
-  return countries.map((c) => ({ code: c.code.toLowerCase() }));
 }
 
 // 나라별 현지어 SEO 메타 생성
@@ -90,6 +88,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+async function getUserLang(): Promise<string> {
+  const cookieStore = await cookies();
+  const override = cookieStore.get("preferred-country")?.value;
+  if (override) {
+    const c = countries.find((c) => c.code === override);
+    if (c) return c.lang;
+  }
+  const headersList = await headers();
+  const detected = headersList.get("x-vercel-ip-country") || "US";
+  const c = countries.find((c) => c.code === detected);
+  return c?.lang || "en";
+}
+
 export default async function CountryPage({ params }: PageProps) {
   const { code } = await params;
   const country = getCountryByCode(code);
@@ -98,9 +109,13 @@ export default async function CountryPage({ params }: PageProps) {
 
   const trends = await fetchTrendsForCountry(country.code);
   const ui = country.ui;
+  const userLang = await getUserLang();
 
   return (
     <>
+      {/* 자동 번역: 유저 언어 ≠ 페이지 언어일 때 */}
+      <AutoTranslate userLang={userLang} pageLang={country.lang} />
+
       {/* Country Hero - Compact */}
       <section
         className="relative text-white"
