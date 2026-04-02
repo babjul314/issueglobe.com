@@ -185,8 +185,18 @@ export async function fetchTrendsForCountry(
 
     // RSS 데이터와 미리 작성된 콘텐츠 병합
     const merged = rssItems.map((rssItem) => {
+      // 유연한 매칭: 정확히 일치 → 포함 관계 → slug 비교
+      const titleLower = rssItem.title.toLowerCase();
       const enriched = preloaded.find(
-        (p) => p.title.toLowerCase() === rssItem.title.toLowerCase()
+        (p) => p.title.toLowerCase() === titleLower
+      ) || preloaded.find(
+        (p) => titleLower.includes(p.title.toLowerCase()) || p.title.toLowerCase().includes(titleLower)
+      ) || preloaded.find(
+        (p) => {
+          const pSlugBase = p.slug.replace(/-\d{4}-\d{2}-\d{2}$/, "");
+          const rSlugBase = rssItem.slug.replace(/-\d{4}-\d{2}-\d{2}$/, "");
+          return pSlugBase === rSlugBase;
+        }
       );
       if (enriched) {
         return {
@@ -201,7 +211,21 @@ export async function fetchTrendsForCountry(
       return rssItem;
     });
 
-    const result = merged.length > 0 ? merged : preloaded;
+    // enriched 콘텐츠가 있는 항목 수 확인
+    const enrichedCount = merged.filter((m) => m.detail).length;
+
+    // preloaded에 상세 콘텐츠가 있고 RSS 매칭이 부족하면 preloaded 우선
+    // RSS 항목에 preloaded 콘텐츠를 앞에 추가
+    let result: TrendItem[];
+    if (preloaded.length > 0 && preloaded[0].detail && enrichedCount < 2) {
+      // preloaded를 메인으로, RSS 중 매칭 안 된 것만 뒤에 추가
+      const preloadedTitles = new Set(preloaded.map((p) => p.title.toLowerCase()));
+      const extraRss = merged.filter((m) => !m.detail && !preloadedTitles.has(m.title.toLowerCase()));
+      result = [...preloaded, ...extraRss];
+    } else {
+      result = merged.length > 0 ? merged : preloaded;
+    }
+
     if (result.length > 0) {
       memoryCache.set(cacheKey, { data: result, timestamp: Date.now() });
     }
