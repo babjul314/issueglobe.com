@@ -9,6 +9,7 @@ import { fetchTrendsForCountry, TrendItem } from "@/lib/google-trends";
 import Comments from "@/components/Comments";
 import AutoTranslate from "@/components/AutoTranslate";
 import YouTubeVideos from "@/components/YouTubeVideos";
+import RelatedArticles from "@/components/RelatedArticles";
 
 export const revalidate = 300; // 5분 캐시
 
@@ -182,6 +183,9 @@ export default async function TrendPage({ params }: PageProps) {
             <section className="rounded-2xl bg-white border border-gray-200 p-6 shadow-sm">
               <YouTubeVideos query={trend.title} />
             </section>
+
+            {/* Related Articles */}
+            <RelatedArticles articles={trend.relatedArticles || []} />
 
             {/* Source Link */}
             {trend.sourceUrl && (
