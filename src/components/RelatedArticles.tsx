@@ -6,6 +6,7 @@ interface Article {
   url: string;
   title: string;
   source: string;
+  image?: string;
 }
 
 interface RelatedArticlesProps {
@@ -49,13 +50,22 @@ export default function RelatedArticles({ articles }: RelatedArticlesProps) {
             href={article.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="group shrink-0 w-80 rounded-xl overflow-hidden border border-gray-200 bg-white hover:shadow-lg hover:-translate-y-0.5 transition-all"
+            className="group shrink-0 w-72 rounded-xl overflow-hidden border border-gray-200 bg-white hover:shadow-lg hover:-translate-y-0.5 transition-all"
           >
+            {article.image && (
+              <div className="relative w-full h-40 bg-gray-200 overflow-hidden">
+                <img
+                  src={article.image}
+                  alt={article.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  loading="lazy"
+                />
+              </div>
+            )}
             <div className="p-4">
-              <p className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-3 leading-snug mb-2">
+              <p className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-3 leading-snug">
                 {article.title}
               </p>
-              <p className="text-xs text-gray-400 truncate">{article.source}</p>
               <div className="mt-3 flex items-center gap-1 text-blue-600 text-xs font-medium group-hover:gap-2 transition-all">
                 Read more
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

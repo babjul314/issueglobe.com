@@ -2,6 +2,7 @@ export interface RelatedArticle {
   url: string;
   title: string;
   source: string;
+  image?: string;
 }
 
 export interface TrendItem {
