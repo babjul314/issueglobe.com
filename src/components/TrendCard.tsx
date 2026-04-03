@@ -58,17 +58,6 @@ export default function TrendCard({ trend, rank }: TrendCardProps) {
             >
               {trend.traffic}
             </span>
-            {trend.pubTime && (
-              <>
-                <span className="text-xs text-gray-300">|</span>
-                <span className="inline-flex items-center gap-1 text-xs text-orange-500 font-medium">
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  {trend.pubTime}
-                </span>
-              </>
-            )}
           </div>
 
           {/* Title */}
