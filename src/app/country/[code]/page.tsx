@@ -212,9 +212,10 @@ export default async function CountryPage({ params }: PageProps) {
             "@context": "https://schema.org",
             "@type": "CollectionPage",
             name: `${country.name} Trending Topics`,
-            description: `Real-time trending topics in ${country.name} (${country.nameLocal})`,
+            description: `Real-time trending topics in ${country.name} (${country.nameLocal}) updated hourly.`,
             url: `https://issueglobe.com/country/${code.toLowerCase()}`,
             inLanguage: country.lang,
+            isAccessibleForFree: true,
             isPartOf: {
               "@type": "WebSite",
               name: "IssueGlobe",
@@ -232,7 +233,27 @@ export default async function CountryPage({ params }: PageProps) {
                 position: i + 1,
                 name: t.title,
                 url: `https://issueglobe.com/trend/${t.slug}`,
+                image: t.imageUrl || undefined,
+                datePublished: t.date,
+                keywords: [t.title],
               })),
+            },
+            breadcrumb: {
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                {
+                  "@type": "ListItem",
+                  position: 1,
+                  name: "Home",
+                  item: "https://issueglobe.com",
+                },
+                {
+                  "@type": "ListItem",
+                  position: 2,
+                  name: country.name,
+                  item: `https://issueglobe.com/country/${code.toLowerCase()}`,
+                },
+              ],
             },
           }),
         }}
