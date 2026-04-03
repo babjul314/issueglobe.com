@@ -174,13 +174,6 @@ export default async function TrendPage({ params }: PageProps) {
           <h1 className="text-3xl md:text-5xl font-black text-white leading-tight mb-4">
             {trend.title}
           </h1>
-
-          {/* Description */}
-          {trend.description && (
-            <p className="text-lg text-white/80 max-w-2xl">
-              {trend.description}
-            </p>
-          )}
         </div>
       </div>
 
