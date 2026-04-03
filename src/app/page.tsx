@@ -1,11 +1,12 @@
 import { headers, cookies } from "next/headers";
 import Link from "next/link";
 import { countries, getCountryByCode } from "@/data/countries";
-import { fetchTrendsForCountry } from "@/lib/google-trends";
+import { db } from "@/lib/firebase";
+import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
 import TrendCard from "@/components/TrendCard";
 import CountrySelector from "@/components/CountrySelector";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300; // 5분 캐시
 
 async function getUserCountry(): Promise<string> {
   const cookieStore = await cookies();
@@ -21,10 +22,23 @@ async function getUserCountry(): Promise<string> {
   return valid ? detected : "US";
 }
 
+async function getTrendsFromFirebase(countryCode: string) {
+  try {
+    const today = new Date().toISOString().split("T")[0];
+    const trendsRef = collection(db, "trends", countryCode, today);
+    const q = query(trendsRef, orderBy("createdAt", "desc"), limit(20));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc) => doc.data());
+  } catch (error) {
+    console.error("Firebase error:", error);
+    return [];
+  }
+}
+
 export default async function HomePage() {
   const countryCode = await getUserCountry();
   const country = getCountryByCode(countryCode)!;
-  const trends = await fetchTrendsForCountry(country.code);
+  const trends = await getTrendsFromFirebase(country.code);
   const ui = country.ui;
 
   return (

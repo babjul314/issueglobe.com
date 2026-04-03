@@ -3,15 +3,30 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { headers, cookies } from "next/headers";
 import { countries, getCountryByCode } from "@/data/countries";
+import { db } from "@/lib/firebase";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { fetchTrendsForCountry, TrendItem } from "@/lib/google-trends";
 import Comments from "@/components/Comments";
 import AutoTranslate from "@/components/AutoTranslate";
 import YouTubeVideos from "@/components/YouTubeVideos";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300; // 5분 캐시
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+async function getTrendsFromFirebase(countryCode: string): Promise<TrendItem[]> {
+  try {
+    const today = new Date().toISOString().split("T")[0];
+    const trendsRef = collection(db, "trends", countryCode, today);
+    const q = query(trendsRef, orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc) => doc.data() as TrendItem);
+  } catch (error) {
+    console.error("Firebase error:", error);
+    return [];
+  }
 }
 
 async function findTrendBySlug(slug: string): Promise<TrendItem | null> {
@@ -22,7 +37,13 @@ async function findTrendBySlug(slug: string): Promise<TrendItem | null> {
   const country = getCountryByCode(countryCode);
   if (!country) return null;
 
-  const trends = await fetchTrendsForCountry(country.code);
+  // Firebase에서 먼저 찾기
+  let trends = await getTrendsFromFirebase(country.code);
+
+  // Firebase에 없으면 RSS에서 찾기 (fallback)
+  if (trends.length === 0) {
+    trends = await fetchTrendsForCountry(country.code);
+  }
 
   // 정확한 매칭
   const exact = trends.find((t) => t.slug === decoded || t.slug === slug);
@@ -82,9 +103,16 @@ export default async function TrendPage({ params }: PageProps) {
 
   const country = getCountryByCode(trend.country);
   const userLang = await getUserLang();
-  const relatedTrends = country
-    ? (await fetchTrendsForCountry(country.code)).filter((t) => t.slug !== slug)
+
+  // Firebase에서 관련 트렌드 가져오기
+  let relatedTrends = country
+    ? (await getTrendsFromFirebase(country.code)).filter((t) => t.slug !== slug)
     : [];
+
+  // Firebase에 없으면 RSS에서 가져오기
+  if (relatedTrends.length === 0 && country) {
+    relatedTrends = (await fetchTrendsForCountry(country.code)).filter((t) => t.slug !== slug);
+  }
 
   return (
     <>
@@ -163,109 +191,7 @@ export default async function TrendPage({ params }: PageProps) {
           {/* Main Content - 2/3 */}
           <div className="lg:col-span-2 space-y-8">
 
-            {/* Summary Card */}
-            {trend.summary && (
-              <section className="rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 p-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </span>
-                  <h2 className="text-lg font-bold text-blue-900">Summary</h2>
-                </div>
-                <p className="text-blue-800 leading-relaxed text-lg">
-                  {trend.summary}
-                </p>
-              </section>
-            )}
-
-            {/* Detail Card */}
-            {trend.detail && (
-              <section className="rounded-2xl bg-white border border-gray-200 p-6 shadow-sm">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white text-sm">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </span>
-                  <h2 className="text-lg font-bold text-gray-900">In-Depth Analysis</h2>
-                </div>
-                <div className="text-gray-700 leading-relaxed space-y-4">
-                  {trend.detail.split('. ').reduce((acc: string[][], sentence, i) => {
-                    const groupIndex = Math.floor(i / 2);
-                    if (!acc[groupIndex]) acc[groupIndex] = [];
-                    acc[groupIndex].push(sentence);
-                    return acc;
-                  }, []).map((group, i) => (
-                    <p key={i}>{group.join('. ')}{!group[group.length - 1].endsWith('.') ? '.' : ''}</p>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Reactions / Comments Card */}
-            {trend.reactions && (
-              <section className="rounded-2xl bg-white border border-gray-200 overflow-hidden shadow-sm">
-                <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">💬</span>
-                    <h2 className="text-lg font-bold text-white">Public Reactions & Opinions</h2>
-                  </div>
-                </div>
-                <div className="p-6 space-y-4">
-                  {/* Simulated comment-style reactions */}
-                  {trend.reactions.split(/[.!?]+\s*/).filter(Boolean).map((reaction, i) => (
-                    <div key={i} className="flex gap-3">
-                      <div
-                        className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-white text-xs font-bold"
-                        style={{
-                          backgroundColor: [
-                            "#3B82F6", "#EF4444", "#10B981", "#F59E0B",
-                            "#8B5CF6", "#EC4899", "#06B6D4", "#F97316"
-                          ][i % 8],
-                        }}
-                      >
-                        {String.fromCodePoint(0x1F464)}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-semibold text-gray-800">
-                            User {i + 1}
-                          </span>
-                          <span className="text-xs text-gray-400">
-                            {Math.floor(Math.random() * 59) + 1}m ago
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 rounded-xl rounded-tl-none px-4 py-2.5">
-                          {reaction.trim()}
-                          {!reaction.trim().endsWith('.') && !reaction.trim().endsWith('!') ? '.' : ''}
-                        </p>
-                        <div className="flex items-center gap-4 mt-1.5">
-                          <button className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 transition-colors">
-                            ❤️ {Math.floor(Math.random() * 200) + 10}
-                          </button>
-                          <button className="flex items-center gap-1 text-xs text-gray-400 hover:text-blue-500 transition-colors">
-                            💬 {Math.floor(Math.random() * 30) + 1}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* No detailed content fallback */}
-            {!trend.summary && !trend.detail && trend.description && (
-              <section className="rounded-2xl bg-white border border-gray-200 p-6 shadow-sm">
-                <p className="text-lg text-gray-700 leading-relaxed">
-                  {trend.description}
-                </p>
-              </section>
-            )}
-
-            {/* YouTube Videos - 상세 바로 다음 */}
+            {/* YouTube Videos */}
             <section className="rounded-2xl bg-white border border-gray-200 p-6 shadow-sm">
               <YouTubeVideos query={trend.title} />
             </section>

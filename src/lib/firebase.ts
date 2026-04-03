@@ -13,7 +13,7 @@ const firebaseConfig = {
 };
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-const auth = getAuth(app);
+const auth = typeof window !== "undefined" ? getAuth(app) : null;
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
