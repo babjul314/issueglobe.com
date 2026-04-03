@@ -125,8 +125,9 @@ export default async function TrendPage({ params }: PageProps) {
           <div className="absolute inset-0">
             <img
               src={trend.imageUrl}
-              alt={trend.title}
+              alt={`${trend.title} - Trending in ${country?.name}`}
               className="w-full h-full object-cover opacity-20"
+              loading="lazy"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
           </div>
