@@ -134,7 +134,16 @@ export default async function HomePage() {
             "@type": "WebSite",
             name: "IssueGlobe",
             url: "https://issueglobe.com",
-            description: `Real-time trending topics in ${country.name} and 30 countries around the world.`,
+            description: "Real-time trending topics from 30 countries. Updated hourly with live Google Trends data.",
+            potentialAction: {
+              "@type": "SearchAction",
+              target: {
+                "@type": "EntryPoint",
+                urlTemplate: "https://issueglobe.com/country/{country}"
+              }
+            },
+            inLanguage: [country.lang, "en"],
+            isAccessibleForFree: true,
           }),
         }}
       />

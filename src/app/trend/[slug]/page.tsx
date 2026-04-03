@@ -323,12 +323,28 @@ export default async function TrendPage({ params }: PageProps) {
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "Article",
+            "@type": "NewsArticle",
             headline: trend.title,
+            description: trend.description || trend.summary,
             datePublished: trend.date,
-            image: trend.imageUrl || undefined,
+            dateModified: trend.date,
+            image: trend.imageUrl ? [trend.imageUrl] : undefined,
             author: { "@type": "Organization", name: "IssueGlobe" },
-            publisher: { "@type": "Organization", name: "IssueGlobe", url: "https://issueglobe.com" },
+            publisher: {
+              "@type": "Organization",
+              name: "IssueGlobe",
+              url: "https://issueglobe.com",
+              logo: {
+                "@type": "ImageObject",
+                url: "https://issueglobe.com/logo.png",
+                width: 250,
+                height: 60
+              }
+            },
+            keywords: [trend.title, ...trend.relatedQueries],
+            articleBody: trend.detail || trend.summary,
+            inLanguage: country?.lang || "en",
+            isAccessibleForFree: true,
           }),
         }}
       />
