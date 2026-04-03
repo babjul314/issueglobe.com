@@ -62,22 +62,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const country = getCountryByCode(trend.country);
   const title = `${trend.title} - Trending in ${country?.name || trend.country}`;
-  const description =
-    trend.summary ||
-    trend.description ||
-    `"${trend.title}" is trending in ${country?.name} with ${trend.traffic} searches.`;
 
   return {
     title,
-    description,
     openGraph: {
       title,
-      description,
       type: "article",
       publishedTime: trend.date,
       images: trend.imageUrl ? [{ url: trend.imageUrl }] : undefined,
     },
-    twitter: { card: "summary_large_image", title, description },
+    twitter: { card: "summary_large_image", title },
     alternates: { canonical: `https://issueglobe.com/trend/${slug}` },
   };
 }
@@ -326,7 +320,6 @@ export default async function TrendPage({ params }: PageProps) {
             "@context": "https://schema.org",
             "@type": "Article",
             headline: trend.title,
-            description: trend.summary || trend.description,
             datePublished: trend.date,
             image: trend.imageUrl || undefined,
             author: { "@type": "Organization", name: "IssueGlobe" },
