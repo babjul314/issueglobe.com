@@ -4,6 +4,7 @@ import { headers, cookies } from "next/headers";
 import { countries, getCountryByCode } from "@/data/countries";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { TrendItem } from "@/lib/google-trends";
 import TrendCard from "@/components/TrendCard";
 import AutoTranslate from "@/components/AutoTranslate";
 import Link from "next/link";
@@ -89,13 +90,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-async function getTrendsFromFirebase(countryCode: string) {
+async function getTrendsFromFirebase(countryCode: string): Promise<TrendItem[]> {
   try {
     const today = new Date().toISOString().split("T")[0];
     const trendsRef = collection(db, "trends", countryCode, today);
     const q = query(trendsRef, orderBy("createdAt", "desc"));
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => doc.data());
+    return snapshot.docs.map((doc) => doc.data() as TrendItem);
   } catch (error) {
     console.error("Firebase error:", error);
     return [];

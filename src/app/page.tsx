@@ -3,6 +3,7 @@ import Link from "next/link";
 import { countries, getCountryByCode } from "@/data/countries";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
+import { TrendItem } from "@/lib/google-trends";
 import TrendCard from "@/components/TrendCard";
 import CountrySelector from "@/components/CountrySelector";
 
@@ -22,13 +23,13 @@ async function getUserCountry(): Promise<string> {
   return valid ? detected : "US";
 }
 
-async function getTrendsFromFirebase(countryCode: string) {
+async function getTrendsFromFirebase(countryCode: string): Promise<TrendItem[]> {
   try {
     const today = new Date().toISOString().split("T")[0];
     const trendsRef = collection(db, "trends", countryCode, today);
     const q = query(trendsRef, orderBy("createdAt", "desc"), limit(20));
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => doc.data());
+    return snapshot.docs.map((doc) => doc.data() as TrendItem);
   } catch (error) {
     console.error("Firebase error:", error);
     return [];

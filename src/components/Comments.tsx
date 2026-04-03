@@ -34,6 +34,7 @@ export default function Comments({ term }: CommentsProps) {
 
   // 로그인 상태 감지
   useEffect(() => {
+    if (!auth) return;
     const unsubscribe = onAuthStateChanged(auth, (u) => {
       setUser(u);
     });
@@ -67,6 +68,7 @@ export default function Comments({ term }: CommentsProps) {
   }, [term]);
 
   const handleLogin = useCallback(async () => {
+    if (!auth) return;
     try {
       await signInWithPopup(auth, googleProvider);
     } catch {
@@ -75,6 +77,7 @@ export default function Comments({ term }: CommentsProps) {
   }, []);
 
   const handleLogout = useCallback(async () => {
+    if (!auth) return;
     await signOut(auth);
   }, []);
 

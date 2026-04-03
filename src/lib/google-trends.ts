@@ -16,7 +16,7 @@ export interface TrendItem {
   date: string;
   pubTime: string; // 트렌드 등록 시간 (예: "3시간 전", "14:30")
   relatedQueries: string[];
-  relatedArticles: RelatedArticle[]; // 관련 기사들
+  relatedArticles?: RelatedArticle[]; // 관련 기사들
   summary: string;
   detail: string;
   reactions: string;
