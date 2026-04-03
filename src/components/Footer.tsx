@@ -85,7 +85,7 @@ export default function Footer() {
         <div className="border-t border-gray-800 mt-12 pt-8 text-center text-sm">
           <p>&copy; {new Date().getFullYear()} IssueGlobe. All rights reserved.</p>
           <p className="mt-1 text-gray-500">
-            Powered by Google Trends data. Updated daily.
+            Real-time trending data updated hourly from 30 countries.
           </p>
         </div>
       </div>

@@ -110,8 +110,9 @@ async function getUserLang(): Promise<string> {
     const c = countries.find((c) => c.code === override);
     if (c) return c.lang;
   }
+
   const headersList = await headers();
-  const detected = headersList.get("x-vercel-ip-country") || "US";
+  const detected = headersList.get("x-vercel-ip-country") || headersList.get("cf-ipcountry") || "US";
   const c = countries.find((c) => c.code === detected);
   return c?.lang || "en";
 }

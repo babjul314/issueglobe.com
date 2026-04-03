@@ -7,7 +7,7 @@ import { TrendItem } from "@/lib/google-trends";
 import TrendCard from "@/components/TrendCard";
 import CountrySelector from "@/components/CountrySelector";
 
-export const revalidate = 300; // 5분 캐시
+export const revalidate = 60; // 1분 캐시 (더 자주 새로고침)
 
 async function getUserCountry(): Promise<string> {
   const cookieStore = await cookies();
@@ -18,9 +18,22 @@ async function getUserCountry(): Promise<string> {
   }
 
   const headersList = await headers();
-  const detected = headersList.get("x-vercel-ip-country") || "US";
-  const valid = countries.find((c) => c.code === detected);
-  return valid ? detected : "US";
+  // Vercel IP 헤더 확인
+  const detected = headersList.get("x-vercel-ip-country");
+  if (detected) {
+    const valid = countries.find((c) => c.code === detected);
+    if (valid) return detected;
+  }
+
+  // CloudFlare IP 헤더 확인 (대체 옵션)
+  const cfCountry = headersList.get("cf-ipcountry");
+  if (cfCountry) {
+    const valid = countries.find((c) => c.code === cfCountry);
+    if (valid) return cfCountry;
+  }
+
+  // 기본값: US
+  return "US";
 }
 
 async function getTrendsFromFirebase(countryCode: string): Promise<TrendItem[]> {
