@@ -2,7 +2,8 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { headers, cookies } from "next/headers";
 import { countries, getCountryByCode } from "@/data/countries";
-import { fetchTrendsForCountry } from "@/lib/google-trends";
+import { db } from "@/lib/firebase";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import TrendCard from "@/components/TrendCard";
 import AutoTranslate from "@/components/AutoTranslate";
 import Link from "next/link";
@@ -88,6 +89,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+async function getTrendsFromFirebase(countryCode: string) {
+  try {
+    const today = new Date().toISOString().split("T")[0];
+    const trendsRef = collection(db, "trends", countryCode, today);
+    const q = query(trendsRef, orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc) => doc.data());
+  } catch (error) {
+    console.error("Firebase error:", error);
+    return [];
+  }
+}
+
 async function getUserLang(): Promise<string> {
   const cookieStore = await cookies();
   const override = cookieStore.get("preferred-country")?.value;
@@ -107,7 +121,7 @@ export default async function CountryPage({ params }: PageProps) {
 
   if (!country) notFound();
 
-  const trends = await fetchTrendsForCountry(country.code);
+  const trends = await getTrendsFromFirebase(country.code);
   const ui = country.ui;
   const userLang = await getUserLang();
 
