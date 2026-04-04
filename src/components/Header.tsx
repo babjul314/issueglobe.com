@@ -81,8 +81,28 @@ export default function Header() {
     }
   }
 
-  // 처음 로드 시 IP 기반 언어 또는 저장된 언어 로드
+  // 처음 로드 시 초기 나라 저장 및 언어 로드
   useEffect(() => {
+    // 1. 현재 페이지에서 country code 감지
+    const pathname = typeof window !== "undefined" ? window.location.pathname : "";
+    let currentCountry: string | null = null;
+
+    // URL에서 country code 추출 (/country/kr 형식)
+    if (pathname.startsWith("/country/")) {
+      currentCountry = pathname.split("/")[2]?.toUpperCase() || null;
+    }
+
+    // 2. initial-country 저장 (아직 없을 때만)
+    const existingInitial = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("initial-country="))
+      ?.split("=")[1];
+
+    if (!existingInitial && currentCountry) {
+      document.cookie = `initial-country=${currentCountry};path=/;max-age=${60 * 60 * 24 * 365}`;
+    }
+
+    // 3. 언어 설정
     const savedLang = document.cookie
       .split("; ")
       .find((row) => row.startsWith("preferred-language="))
