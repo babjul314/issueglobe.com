@@ -5,10 +5,22 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: "/",
-        disallow: ["/api/"],
+        allow: ["/", "/country/", "/trend/"],
+        disallow: ["/api/", "/_next/"],
+        crawlDelay: 0.5,
+      },
+      {
+        userAgent: "GPTBot",
+        disallow: ["/"],
+      },
+      {
+        userAgent: "CCBot",
+        disallow: ["/"],
       },
     ],
-    sitemap: "https://issueglobe.com/sitemap.xml",
+    sitemap: [
+      "https://issueglobe.com/sitemap.xml",
+    ],
+    host: "https://issueglobe.com",
   };
 }

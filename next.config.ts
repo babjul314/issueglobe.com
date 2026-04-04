@@ -9,8 +9,55 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // 헤더 설정 (캐싱, 보안)
+  // 헤더 설정 (캐싱, 보안, SEO)
   headers: async () => [
+    {
+      source: "/",
+      headers: [
+        {
+          key: "Cache-Control",
+          value: "public, max-age=60, stale-while-revalidate=300",
+        },
+        {
+          key: "X-Content-Type-Options",
+          value: "nosniff",
+        },
+        {
+          key: "X-Frame-Options",
+          value: "DENY",
+        },
+        {
+          key: "X-XSS-Protection",
+          value: "1; mode=block",
+        },
+      ],
+    },
+    {
+      source: "/country/:code",
+      headers: [
+        {
+          key: "Cache-Control",
+          value: "public, max-age=300, stale-while-revalidate=600",
+        },
+        {
+          key: "X-Content-Type-Options",
+          value: "nosniff",
+        },
+      ],
+    },
+    {
+      source: "/trend/:slug",
+      headers: [
+        {
+          key: "Cache-Control",
+          value: "public, max-age=600, stale-while-revalidate=1800",
+        },
+        {
+          key: "X-Content-Type-Options",
+          value: "nosniff",
+        },
+      ],
+    },
     {
       source: "/(.*)",
       headers: [
@@ -38,6 +85,24 @@ const nextConfig: NextConfig = {
         {
           key: "Cache-Control",
           value: "public, max-age=300",
+        },
+      ],
+    },
+    {
+      source: "/sitemap.xml",
+      headers: [
+        {
+          key: "Cache-Control",
+          value: "public, max-age=3600",
+        },
+      ],
+    },
+    {
+      source: "/robots.txt",
+      headers: [
+        {
+          key: "Cache-Control",
+          value: "public, max-age=86400",
         },
       ],
     },

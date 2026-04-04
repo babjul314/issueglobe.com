@@ -94,6 +94,8 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="canonical" href="https://issueglobe.com" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="https://www.google-analytics.com" />
         <link rel="alternate" hrefLang="x-default" href="https://issueglobe.com" />
         <link rel="alternate" hrefLang="en" href="https://issueglobe.com/country/us" />
         <link rel="alternate" hrefLang="ja" href="https://issueglobe.com/country/jp" />
@@ -131,6 +133,51 @@ export default function RootLayout({
               gtag('js', new Date());
               gtag('config', 'G-C6D6ME59JT');
             `,
+          }}
+        />
+
+        {/* Organization Schema */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "IssueGlobe",
+              url: "https://issueglobe.com",
+              logo: "https://issueglobe.com/logo.png",
+              description: "Real-time trending topics from 30 countries. Discover what the world is searching for right now.",
+              sameAs: [
+                "https://twitter.com/issueglobe",
+                "https://www.linkedin.com/company/issueglobe"
+              ],
+              contactPoint: {
+                "@type": "ContactPoint",
+                contactType: "Customer Support",
+                url: "https://issueglobe.com"
+              }
+            }),
+          }}
+        />
+
+        {/* WebSite Schema with SearchAction */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "IssueGlobe",
+              url: "https://issueglobe.com",
+              description: "Discover what the world is searching for right now",
+              potentialAction: {
+                "@type": "SearchAction",
+                target: {
+                  "@type": "EntryPoint",
+                  urlTemplate: "https://issueglobe.com/country/{country_code}"
+                }
+              }
+            }),
           }}
         />
       </head>

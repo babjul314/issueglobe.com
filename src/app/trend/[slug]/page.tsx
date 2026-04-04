@@ -305,7 +305,7 @@ export default async function TrendPage({ params }: PageProps) {
         </div>
       </section>
 
-      {/* JSON-LD */}
+      {/* JSON-LD - Structured Data */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -333,6 +333,64 @@ export default async function TrendPage({ params }: PageProps) {
             articleBody: trend.detail || trend.summary,
             inLanguage: country?.lang || "en",
             isAccessibleForFree: true,
+          }),
+        }}
+      />
+
+      {/* BreadcrumbList Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Home",
+                item: "https://issueglobe.com"
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: country?.name || "Trends",
+                item: `https://issueglobe.com/country/${trend.country.toLowerCase()}`
+              },
+              {
+                "@type": "ListItem",
+                position: 3,
+                name: trend.title,
+                item: `https://issueglobe.com/trend/${slug}`
+              }
+            ]
+          }),
+        }}
+      />
+
+      {/* TrendingTopic Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Thing",
+            name: trend.title,
+            description: trend.summary || trend.description,
+            url: `https://issueglobe.com/trend/${slug}`,
+            inLanguage: country?.lang || "en",
+            isPartOf: {
+              "@type": "WebSite",
+              name: "IssueGlobe",
+              url: "https://issueglobe.com"
+            },
+            aggregateRating: trend.traffic ? {
+              "@type": "AggregateRating",
+              ratingValue: Math.min(5, Math.ceil(parseInt(trend.traffic.replace(/[^\d]/g, '')) / 1000)),
+              ratingCount: 1,
+              bestRating: 5,
+              worstRating: 1
+            } : undefined
           }),
         }}
       />

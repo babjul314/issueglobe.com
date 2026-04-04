@@ -21,13 +21,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.9,
   }));
 
-  // 트렌드 개별 페이지 (주요 국가만 빌드 타임에)
+  // 트렌드 개별 페이지 (모든 국가 포함)
   const trendPages: MetadataRoute.Sitemap = [];
-  const priorityCountries = ["US", "KR", "JP", "GB", "DE", "FR", "BR", "IN", "AU", "CA"];
 
-  for (const code of priorityCountries) {
+  for (const country of countries) {
     try {
-      const trends = await fetchTrendsForCountry(code);
+      const trends = await fetchTrendsForCountry(country.code);
       for (const trend of trends) {
         trendPages.push({
           url: `${baseUrl}/trend/${encodeURIComponent(trend.slug)}`,
@@ -37,7 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         });
       }
     } catch {
-      // skip
+      // skip country on error
     }
   }
 
