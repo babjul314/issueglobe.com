@@ -5,8 +5,8 @@ export default function Footer() {
   return (
     <footer className="bg-gray-950 text-gray-400 mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="md:col-span-1">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div>
             <Link href="/" className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
                 <span className="text-white text-sm font-bold">IG</span>
@@ -22,61 +22,93 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold text-white mb-4">Regions</h4>
+            <h4 className="font-semibold text-white mb-4">Popular Regions</h4>
             <ul className="space-y-2 text-sm">
-              {["North America", "Europe", "Asia", "Middle East", "South America", "Oceania"].map(
-                (region) => (
-                  <li key={region}>
-                    <Link
-                      href={`/#${region.toLowerCase().replace(/\s/g, "-")}`}
-                      className="hover:text-white transition-colors"
-                    >
-                      {region}
-                    </Link>
-                  </li>
-                )
-              )}
+              <li>
+                <Link href="/country/us" className="hover:text-white transition-colors">
+                  🇺🇸 United States
+                </Link>
+              </li>
+              <li>
+                <Link href="/country/kr" className="hover:text-white transition-colors">
+                  🇰🇷 South Korea
+                </Link>
+              </li>
+              <li>
+                <Link href="/country/jp" className="hover:text-white transition-colors">
+                  🇯🇵 Japan
+                </Link>
+              </li>
+              <li>
+                <Link href="/country/gb" className="hover:text-white transition-colors">
+                  🇬🇧 United Kingdom
+                </Link>
+              </li>
+              <li>
+                <Link href="/country/de" className="hover:text-white transition-colors">
+                  🇩🇪 Germany
+                </Link>
+              </li>
+              <li>
+                <Link href="/country/fr" className="hover:text-white transition-colors">
+                  🇫🇷 France
+                </Link>
+              </li>
             </ul>
           </div>
 
-          <div>
-            <h4 className="font-semibold text-white mb-4">Top Countries</h4>
-            <ul className="space-y-2 text-sm">
-              {countries.slice(0, 8).map((c) => (
-                <li key={c.code}>
-                  <Link
-                    href={`/country/${c.code.toLowerCase()}`}
-                    className="hover:text-white transition-colors"
-                  >
-                    {c.flag} {c.name}
-                  </Link>
-                </li>
+          <div className="md:col-span-2">
+            <h4 className="font-semibold text-white mb-4">All 30 Countries</h4>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+              {countries.map((c) => (
+                <Link
+                  key={c.code}
+                  href={`/country/${c.code.toLowerCase()}`}
+                  className="hover:text-white transition-colors"
+                  title={`Trending topics in ${c.name}`}
+                >
+                  {c.flag} {c.name}
+                </Link>
               ))}
-            </ul>
+            </div>
           </div>
 
           <div>
-            <h4 className="font-semibold text-white mb-4">About</h4>
+            <h4 className="font-semibold text-white mb-4">About & Links</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <span className="hover:text-white transition-colors cursor-pointer">
-                  About IssueGlobe
-                </span>
+                <Link
+                  href="/"
+                  className="hover:text-white transition-colors"
+                >
+                  Trending Topics
+                </Link>
               </li>
               <li>
-                <span className="hover:text-white transition-colors cursor-pointer">
-                  Data Sources
-                </span>
+                <Link
+                  href="/country/us"
+                  className="hover:text-white transition-colors"
+                >
+                  Google Trends
+                </Link>
               </li>
               <li>
-                <span className="hover:text-white transition-colors cursor-pointer">
-                  Privacy Policy
-                </span>
+                <Link
+                  href="/"
+                  className="hover:text-white transition-colors"
+                >
+                  What is Trending
+                </Link>
               </li>
               <li>
-                <span className="hover:text-white transition-colors cursor-pointer">
-                  Contact
-                </span>
+                <a
+                  href="https://support.google.com/trends"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white transition-colors"
+                >
+                  Trends API Info
+                </a>
               </li>
             </ul>
           </div>
