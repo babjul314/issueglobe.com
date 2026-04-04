@@ -115,7 +115,10 @@ export default function RootLayout({
       <head>
         <link rel="canonical" href="https://issueglobe.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+        <link rel="prefetch" href="/icon.svg" />
         <link rel="alternate" hrefLang="x-default" href="https://issueglobe.com" />
         <link rel="alternate" hrefLang="en" href="https://issueglobe.com/country/us" />
         <link rel="alternate" hrefLang="ja" href="https://issueglobe.com/country/jp" />

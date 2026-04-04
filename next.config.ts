@@ -109,6 +109,19 @@ const nextConfig: NextConfig = {
         },
       ],
     },
+    {
+      source: "/:path*",
+      headers: [
+        {
+          key: "Referrer-Policy",
+          value: "strict-origin-when-cross-origin",
+        },
+        {
+          key: "Permissions-Policy",
+          value: "geolocation=(), microphone=(), camera=()",
+        },
+      ],
+    },
   ],
 
   // 리다이렉트 설정
