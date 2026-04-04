@@ -63,16 +63,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const country = getCountryByCode(trend.country);
   const title = `${trend.title} - Trending in ${country?.name || trend.country}`;
+  const description = trend.summary || trend.description || `Trending topic: ${trend.title} in ${country?.name}. Search volume: ${trend.traffic}`;
 
   return {
     title,
+    description,
     openGraph: {
       title,
+      description,
       type: "article",
       publishedTime: trend.date,
       images: trend.imageUrl ? [{ url: trend.imageUrl }] : undefined,
+      url: `https://issueglobe.com/trend/${slug}`,
     },
-    twitter: { card: "summary_large_image", title },
+    twitter: { card: "summary_large_image", title, description },
     alternates: { canonical: `https://issueglobe.com/trend/${slug}` },
   };
 }
