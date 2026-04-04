@@ -1,8 +1,17 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import "./globals.css";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: "#ffffff",
+  colorScheme: "light",
+};
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,6 +36,13 @@ export const metadata: Metadata = {
     "Discover what the world is searching for right now. IssueGlobe brings you real-time trending topics from 30 countries including US, UK, Korea, Japan, Germany, France and more. Updated hourly with live Google Trends data.",
   icons: {
     icon: "/icon.svg",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
   },
   verification: {
     google: "_jeSSgpDfW_eoTUoFRQlc4te2xIFPM-0Iev7fLEVuOw",
@@ -95,7 +111,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="canonical" href="https://issueglobe.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
