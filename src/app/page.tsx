@@ -109,12 +109,11 @@ export default async function HomePage() {
   const country = getCountryByCode(countryCode)!;
   const trends = await getTrendsFromFirebase(country.code);
   const ui = country.ui;
-  const userLang = await getUserLang();
 
   return (
     <>
-      {/* 자동 번역 */}
-      <AutoTranslate userLang={userLang} pageLang={country.lang} />
+      {/* 자동 번역 - 감지된 나라의 언어로 자동 번역 (페이지 기본은 영어) */}
+      <AutoTranslate userLang={country.lang} pageLang="en" />
 
       {/* Compact Hero - 스크롤 없이 바로 랭킹 보이도록 */}
       <section
