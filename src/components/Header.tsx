@@ -10,7 +10,7 @@ export default function Header() {
   function selectCountry(code: string) {
     document.cookie = `preferred-country=${code};path=/;max-age=${60 * 60 * 24 * 365}`;
     setShowRegions(false);
-    window.location.reload();
+    window.location.href = `/country/${code.toLowerCase()}`;
   }
 
   return (
