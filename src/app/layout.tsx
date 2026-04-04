@@ -26,6 +26,9 @@ export const metadata: Metadata = {
   },
   verification: {
     google: "_jeSSgpDfW_eoTUoFRQlc4te2xIFPM-0Iev7fLEVuOw",
+    other: {
+      "naver-site-verification": "21b65dc9e18a913d4ad55f5ddb8e5776d0fc7bfa",
+    },
   },
   keywords: [
     "trending topics",
