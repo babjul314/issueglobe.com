@@ -66,6 +66,7 @@ export default function Footer() {
                   href={`/country/${c.code.toLowerCase()}`}
                   className="hover:text-white transition-colors"
                   title={`Trending topics in ${c.name}`}
+                  prefetch={true}
                 >
                   {c.flag} {c.name}
                 </Link>

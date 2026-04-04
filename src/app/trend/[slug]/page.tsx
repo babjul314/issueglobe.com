@@ -309,6 +309,7 @@ export default async function TrendPage({ params }: PageProps) {
                       key={t.slug}
                       href={`/trend/${t.slug}`}
                       className="flex items-center gap-3 group"
+                      prefetch={true}
                     >
                       <span
                         className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"

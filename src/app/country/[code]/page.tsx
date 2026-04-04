@@ -210,6 +210,7 @@ export default async function CountryPage({ params }: PageProps) {
                 href={`/country/${c.code.toLowerCase()}`}
                 className="inline-flex items-center gap-2 rounded-full bg-white border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                 title={`Trending topics in ${c.name}`}
+                prefetch={true}
               >
                 {c.flag} {c.name} Trends
               </Link>
