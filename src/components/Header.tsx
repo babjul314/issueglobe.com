@@ -178,6 +178,12 @@ export default function Header() {
             {/* 모바일 메뉴 */}
             <nav className="md:hidden flex items-center gap-3">
               <button
+                onClick={() => setShowLanguages(!showLanguages)}
+                className="text-2xl hover:opacity-70 transition-opacity"
+              >
+                🌐
+              </button>
+              <button
                 onClick={() => setShowRegions(true)}
                 className="text-2xl hover:opacity-70 transition-opacity"
               >
@@ -186,7 +192,7 @@ export default function Header() {
             </nav>
 
             <div className="flex items-center gap-4">
-              {/* 언어 선택 드롭다운 */}
+              {/* 언어 선택 드롭다운 (데스크톱) */}
               <div className="relative hidden sm:block">
                 <button
                   onClick={() => setShowLanguages(!showLanguages)}
@@ -234,6 +240,54 @@ export default function Header() {
           </div>
         </div>
       </header>
+
+      {/* Languages Modal (Mobile) */}
+      {showLanguages && (
+        <div className="sm:hidden">
+          <>
+            <div
+              className="fixed inset-0 z-40 bg-black/50"
+              onClick={() => setShowLanguages(false)}
+            />
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
+                  <h2 className="text-lg sm:text-xl font-bold text-gray-900">Select Language</h2>
+                  <button
+                    onClick={() => setShowLanguages(false)}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="p-3 sm:p-4">
+                  {LANGUAGES.map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => selectLanguage(lang.code)}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left mb-2 transition-colors ${
+                        currentLang === lang.code
+                          ? "bg-blue-50 text-blue-600 font-semibold border border-blue-200"
+                          : "hover:bg-gray-50 border border-transparent hover:border-gray-200"
+                      }`}
+                    >
+                      <span className="text-2xl">{lang.flag}</span>
+                      <div className="flex-1">
+                        <p className="font-semibold text-gray-900">{lang.name}</p>
+                      </div>
+                      {currentLang === lang.code && (
+                        <span className="text-blue-600">✓</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </>
+        </div>
+      )}
 
       {/* Regions Modal */}
       {showRegions && (
