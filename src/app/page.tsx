@@ -7,6 +7,7 @@ import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
 import { TrendItem } from "@/lib/google-trends";
 import TrendCard from "@/components/TrendCard";
 import CountrySelector from "@/components/CountrySelector";
+import AutoTranslate from "@/components/AutoTranslate";
 
 export const revalidate = 60; // 1분 캐시 (더 자주 새로고침)
 
@@ -89,14 +90,32 @@ async function getTrendsFromFirebase(countryCode: string): Promise<TrendItem[]> 
   }
 }
 
+async function getUserLang(): Promise<string> {
+  const cookieStore = await cookies();
+  const override = cookieStore.get("preferred-country")?.value;
+  if (override) {
+    const c = countries.find((c) => c.code === override);
+    if (c) return c.lang;
+  }
+
+  const headersList = await headers();
+  const detected = headersList.get("x-vercel-ip-country") || headersList.get("cf-ipcountry") || "US";
+  const c = countries.find((c) => c.code === detected);
+  return c?.lang || "en";
+}
+
 export default async function HomePage() {
   const countryCode = await getUserCountry();
   const country = getCountryByCode(countryCode)!;
   const trends = await getTrendsFromFirebase(country.code);
   const ui = country.ui;
+  const userLang = await getUserLang();
 
   return (
     <>
+      {/* 자동 번역 */}
+      <AutoTranslate userLang={userLang} pageLang={country.lang} />
+
       {/* Compact Hero - 스크롤 없이 바로 랭킹 보이도록 */}
       <section
         id="regions"
