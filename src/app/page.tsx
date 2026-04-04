@@ -203,9 +203,10 @@ export default async function HomePage() {
                 key={c.code}
                 href={`/country/${c.code.toLowerCase()}`}
                 className="flex items-center gap-2 rounded-xl bg-white border border-gray-200 px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all"
+                title={`See trending topics and popular searches in ${c.name}`}
               >
                 <span className="text-xl">{c.flag}</span>
-                <span className="truncate">{c.name}</span>
+                <span className="truncate">{c.name} Trends</span>
               </Link>
             ))}
         </div>

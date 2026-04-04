@@ -319,8 +319,9 @@ export default async function TrendPage({ params }: PageProps) {
                 <Link
                   href={`/country/${trend.country.toLowerCase()}`}
                   className="block text-center text-sm font-medium text-blue-600 hover:text-blue-700 mt-4 pt-3 border-t border-gray-100"
+                  title={`See all trending topics in ${country?.name}`}
                 >
-                  View all {country?.name} trends →
+                  View all trending searches in {country?.name} →
                 </Link>
               </div>
             )}
