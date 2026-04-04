@@ -223,15 +223,6 @@ export default async function TrendPage({ params }: PageProps) {
                   <span className="text-sm text-gray-500">Date</span>
                   <span className="font-medium text-gray-900">{trend.date}</span>
                 </div>
-                {trend.source && (
-                  <>
-                    <div className="h-px bg-gray-100" />
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-500">Source</span>
-                      <span className="font-medium text-gray-900">{trend.source}</span>
-                    </div>
-                  </>
-                )}
               </div>
             </div>
 

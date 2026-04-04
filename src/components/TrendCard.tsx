@@ -82,7 +82,7 @@ export default function TrendCard({ trend, rank }: TrendCardProps) {
             </div>
           )}
 
-          {/* Tags + Source */}
+          {/* Tags */}
           <div className="flex items-center justify-between">
             <div className="flex flex-wrap gap-1.5">
               {trend.relatedQueries.slice(0, 3).map((q) => (
@@ -94,11 +94,6 @@ export default function TrendCard({ trend, rank }: TrendCardProps) {
                 </span>
               ))}
             </div>
-            {trend.source && (
-              <span className="text-xs text-gray-400 shrink-0 ml-2">
-                {trend.source}
-              </span>
-            )}
           </div>
         </div>
       </div>
