@@ -21,6 +21,9 @@ export const metadata: Metadata = {
   },
   description:
     "Discover what the world is searching for right now. IssueGlobe brings you real-time trending topics from 30 countries including US, UK, Korea, Japan, Germany, France and more. Updated hourly with live Google Trends data.",
+  icons: {
+    icon: "/icon.svg",
+  },
   keywords: [
     "trending topics",
     "google trends",

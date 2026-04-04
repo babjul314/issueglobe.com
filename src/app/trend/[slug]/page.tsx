@@ -186,33 +186,15 @@ export default async function TrendPage({ params }: PageProps) {
               <YouTubeVideos query={trend.title} />
             </section>
 
-            {/* Related Articles */}
-            <RelatedArticles articles={trend.relatedArticles || []} />
-
-            {/* Source Link */}
-            {trend.sourceUrl && (
-              <a
-                href={trend.sourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-between rounded-2xl bg-white border border-gray-200 p-5 hover:shadow-md transition-all group"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                  </span>
-                  <div>
-                    <p className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">Read Original Article</p>
-                    <p className="text-sm text-gray-500">{trend.source}</p>
-                  </div>
-                </div>
-                <svg className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </a>
-            )}
+            {/* Related Articles (including original) */}
+            <RelatedArticles articles={
+              trend.sourceUrl && trend.source
+                ? [
+                    { url: trend.sourceUrl, title: trend.title, source: trend.source, image: trend.imageUrl },
+                    ...(trend.relatedArticles || [])
+                  ]
+                : (trend.relatedArticles || [])
+            } />
           </div>
 
           {/* Sidebar - 1/3 */}
