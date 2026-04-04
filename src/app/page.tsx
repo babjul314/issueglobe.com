@@ -13,21 +13,21 @@ export const revalidate = 60; // 1분 캐시 (더 자주 새로고침)
 
 // Multi-language SEO descriptions for homepage
 const seoDescriptions: Record<string, { title: string; description: string }> = {
-  US: { title: "IssueGlobe - Trending Topics in the United States", description: "Discover what Americans are searching for right now. Real-time Google Trends data updated hourly." },
-  KR: { title: "이슈글로브 - 대한민국 실시간 검색어 순위", description: "한국에서 지금 가장 많이 검색하는 키워드를 실시간으로 확인하세요. 매시간 업데이트되는 구글 트렌드 데이터." },
-  JP: { title: "イシューグローブ - 日本のトレンド検索ランキング", description: "日本で今最も検索されているキーワードをリアルタイムで確認。Googleトレンドデータを毎時更新。" },
-  GB: { title: "IssueGlobe - Trending Topics in the UK", description: "See what the British are searching for right now. Real-time Google Trends data updated hourly." },
-  DE: { title: "IssueGlobe - Aktuelle Trends in Deutschland", description: "Entdecken Sie, wonach Deutsche suchen. Echtzeit Google Trends, stündlich aktualisiert." },
-  FR: { title: "IssueGlobe - Tendances en France", description: "Découvrez les sujets les plus recherchés en France en temps réel. Données Google Trends mises à jour toutes les heures." },
-  ES: { title: "IssueGlobe - Tendencias en España", description: "Descubre qué buscan los españoles en tiempo real. Google Trends actualizado cada hora." },
-  IT: { title: "IssueGlobe - Tendenze in Italia", description: "Scopri cosa cercano gli italiani in tempo reale. Dati Google Trends aggiornati ogni ora." },
-  BR: { title: "IssueGlobe - Assuntos do Momento no Brasil", description: "Descubra o que os brasileiros estão pesquisando agora. Dados do Google Trends atualizados a cada hora." },
-  CA: { title: "IssueGlobe - Trending Topics in Canada", description: "See what Canadians are searching for right now. Real-time Google Trends data updated hourly." },
-  AU: { title: "IssueGlobe - Trending Topics in Australia", description: "See what Australians are searching for right now. Real-time Google Trends data updated hourly." },
-  IN: { title: "IssueGlobe - भारत में ट्रेंडिंग", description: "भारत में अभी सबसे ज्यादा खोजे जाने वाले विषय देखें। प्रतिघंटा अपडेट होने वाला रीयल-टाइम डेटा।" },
-  NL: { title: "IssueGlobe - Trending in Nederland", description: "Ontdek waar Nederlanders nu naar zoeken. Realtime Google Trends data, elk uur bijgewerkt." },
-  TW: { title: "IssueGlobe - 台灣熱門搜尋", description: "查看台灣最熱門的搜尋關鍵字。Google Trends資料每小時更新。" },
-  HK: { title: "IssueGlobe - 香港熱門搜尋", description: "查看香港最熱門的搜尋關鍵字。Google Trends資料每小時更新。" },
+  US: { title: "IssueGlobe - Trending Topics in the United States", description: "Discover what Americans are searching for right now. See real-time trending topics and Google Trends data updated every hour. Find the most searched keywords across the USA." },
+  KR: { title: "이슈글로브 - 대한민국 실시간 검색어 순위", description: "한국에서 지금 가장 많이 검색하는 키워드를 실시간으로 확인하세요. 매시간 업데이트되는 구글 트렌드 데이터로 한국 트렌드를 파악하세요. 최신 검색어 순위와 인기 주제를 한눈에 볼 수 있습니다." },
+  JP: { title: "イシューグローブ - 日本のトレンド検索ランキング", description: "日本で今最も検索されているキーワードをリアルタイムで確認。Googleトレンドデータを毎時更新。最新の日本トレンドと人気検索ワードをすぐに把握できます。" },
+  GB: { title: "IssueGlobe - Trending Topics in the UK", description: "See what the British are searching for right now. Access real-time trending topics and UK Google Trends data updated hourly. Discover the most searched keywords in Britain." },
+  DE: { title: "IssueGlobe - Aktuelle Trends in Deutschland", description: "Entdecken Sie, wonach Deutsche suchen. Echtzeit Google Trends, stündlich aktualisiert. Sehen Sie die beliebtesten Suchanfragen und Trends in Deutschland in Echtzeit." },
+  FR: { title: "IssueGlobe - Tendances en France", description: "Découvrez les sujets les plus recherchés en France en temps réel. Données Google Trends mises à jour toutes les heures. Consultez les tendances françaises et les mots-clés populaires." },
+  ES: { title: "IssueGlobe - Tendencias en España", description: "Descubre qué buscan los españoles en tiempo real. Google Trends actualizado cada hora. Accede a las tendencias españolas más recientes y palabras clave más populares." },
+  IT: { title: "IssueGlobe - Tendenze in Italia", description: "Scopri cosa cercano gli italiani in tempo reale. Dati Google Trends aggiornati ogni ora. Visualizza le tendenze italiane più recenti e le parole chiave più ricercate." },
+  BR: { title: "IssueGlobe - Assuntos do Momento no Brasil", description: "Descubra o que os brasileiros estão pesquisando agora. Dados do Google Trends atualizados a cada hora. Acesse as tendências brasileiras mais recentes e palavras-chave populares." },
+  CA: { title: "IssueGlobe - Trending Topics in Canada", description: "See what Canadians are searching for right now. Real-time trending topics and Google Trends data updated hourly. Explore Canadian trends and popular search keywords." },
+  AU: { title: "IssueGlobe - Trending Topics in Australia", description: "See what Australians are searching for right now. Real-time trending topics and Google Trends data updated hourly. Discover Australian trends and popular search terms." },
+  IN: { title: "IssueGlobe - भारत में ट्रेंडिंग", description: "भारत में अभी सबसे ज्यादा खोजे जाने वाले विषय देखें। प्रतिघंटा अपडेट होने वाला रीयल-टाइम डेटा। भारत के सबसे लोकप्रिय ट्रेंड और खोज शब्द जानें।" },
+  NL: { title: "IssueGlobe - Trending in Nederland", description: "Ontdek waar Nederlanders nu naar zoeken. Realtime Google Trends data, elk uur bijgewerkt. Zie de Nederlandse trends en populaire zoekwoorden op dit moment." },
+  TW: { title: "IssueGlobe - 台灣熱門搜尋", description: "查看台灣最熱門的搜尋關鍵字。Google Trends資料每小時更新。即時掌握台灣最新趨勢和最受歡迎的搜尋主題。" },
+  HK: { title: "IssueGlobe - 香港熱門搜尋", description: "查看香港最熱門的搜尋關鍵字。Google Trends資料每小時更新。即時掌握香港最新趨勢和最受歡迎的搜尋主題。" },
 };
 
 export async function generateMetadata(): Promise<Metadata> {

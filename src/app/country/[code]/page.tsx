@@ -19,7 +19,7 @@ interface PageProps {
 function getLocalizedMeta(country: NonNullable<ReturnType<typeof getCountryByCode>>) {
   const ui = country.ui;
   const seoMap: Record<string, { title: string; description: string; keywords: string[] }> = {
-    US: { title: "Trending Topics in the United States Today", description: "Discover the hottest trending searches in America right now. Updated hourly with real-time Google Trends data.", keywords: ["trending US", "what is trending in America", "US trends today", "Google Trends USA"] },
+    US: { title: "Trending Topics in the United States Today", description: "Discover the hottest trending searches in America right now. See real-time Google Trends data updated hourly. Find what Americans are searching for, trending topics, and viral keywords in the USA.", keywords: ["trending US", "what is trending in America", "US trends today", "Google Trends USA"] },
     KR: { title: "오늘의 실시간 검색어 순위 | 대한민국 트렌드", description: "대한민국에서 지금 가장 많이 검색하는 키워드를 실시간으로 확인하세요. 구글 트렌드 기반 매시간 업데이트.", keywords: ["실시간 검색어", "인기 검색어 순위", "오늘의 트렌드", "구글 트렌드 한국", "실시간 트렌드"] },
     JP: { title: "今日のトレンド検索ランキング | 日本", description: "日本で今最も検索されているキーワードをリアルタイムで確認。Googleトレンドデータを毎時更新。", keywords: ["トレンド検索", "リアルタイム検索ランキング", "日本のトレンド", "Googleトレンド日本", "今日の検索ワード"] },
     GB: { title: "Trending Searches in the UK Today", description: "See what's trending in the United Kingdom right now. Real-time Google Trends data updated hourly.", keywords: ["UK trends", "trending UK", "what is trending in Britain", "Google Trends UK"] },
