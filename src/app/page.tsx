@@ -99,6 +99,7 @@ export default async function HomePage() {
     <>
       {/* Compact Hero - 스크롤 없이 바로 랭킹 보이도록 */}
       <section
+        id="regions"
         className="relative text-white"
         style={{
           background: `linear-gradient(135deg, ${country.color}ee, ${country.color}88, #1e1b4b)`,
