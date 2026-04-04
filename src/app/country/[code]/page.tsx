@@ -9,7 +9,7 @@ import TrendCard from "@/components/TrendCard";
 import AutoTranslate from "@/components/AutoTranslate";
 import Link from "next/link";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60; // ISR: 60초마다 재검증
 
 interface PageProps {
   params: Promise<{ code: string }>;

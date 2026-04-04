@@ -9,7 +9,7 @@ import TrendCard from "@/components/TrendCard";
 import CountrySelector from "@/components/CountrySelector";
 import AutoTranslate from "@/components/AutoTranslate";
 
-export const revalidate = 60; // 1분 캐시 (더 자주 새로고침)
+export const revalidate = 30; // 30초 캐시 (매우 빠른 새로고침)
 
 // Multi-language SEO descriptions for homepage
 const seoDescriptions: Record<string, { title: string; description: string }> = {

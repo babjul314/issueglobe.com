@@ -12,7 +12,7 @@ import AutoTranslate from "@/components/AutoTranslate";
 import YouTubeVideos from "@/components/YouTubeVideos";
 import RelatedArticles from "@/components/RelatedArticles";
 
-export const revalidate = 60; // 1분 캐시 (더 자주 새로고침)
+export const revalidate = 300; // 5분 캐시 (트렌드는 덜 자주 변경됨)
 
 interface PageProps {
   params: Promise<{ slug: string }>;
