@@ -23,7 +23,8 @@ export default function TrendCard({ trend, rank }: TrendCardProps) {
             <div className="relative h-40 sm:h-full w-full overflow-hidden">
               <Image
                 src={trend.imageUrl}
-                alt={trend.title}
+                alt={`${trend.title} - Trending in ${country?.name}`}
+                title={`${trend.title} trending topic image`}
                 fill
                 sizes="(max-width: 640px) 100vw, (max-width: 768px) 192px, 192px"
                 className="object-cover"

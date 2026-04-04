@@ -158,7 +158,8 @@ export default async function TrendPage({ params }: PageProps) {
           <div className="absolute inset-0">
             <Image
               src={trend.imageUrl}
-              alt={`${trend.title} - Trending in ${country?.name}`}
+              alt={`${trend.title} - Trending topic image in ${country?.name}`}
+              title={`${trend.title} - ${trend.traffic} searches`}
               fill
               className="w-full h-full object-cover opacity-20"
               loading="lazy"

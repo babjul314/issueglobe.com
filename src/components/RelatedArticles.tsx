@@ -57,7 +57,8 @@ export default function RelatedArticles({ articles }: RelatedArticlesProps) {
               <div className="relative w-full h-40 bg-gray-200 overflow-hidden">
                 <Image
                   src={article.image}
-                  alt={article.title}
+                  alt={`${article.title} - Related article about ${article.source}`}
+                  title={`Article: ${article.title}`}
                   fill
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 288px"
                   className="object-cover group-hover:scale-105 transition-transform duration-300"
