@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import EngagementTracker from "@/components/EngagementTracker";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -119,6 +120,10 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="prefetch" href="/icon.svg" />
+        <link rel="preload" href="/_next/static/css/globals.css" as="style" />
+        <link rel="preload" as="font" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://apis.google.com" />
+        <link rel="dns-prefetch" href="https://www.youtube.com" />
         <link rel="alternate" hrefLang="x-default" href="https://issueglobe.com" />
         <link rel="alternate" hrefLang="en" href="https://issueglobe.com/country/us" />
         <link rel="alternate" hrefLang="ja" href="https://issueglobe.com/country/jp" />
@@ -207,6 +212,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 text-gray-900`}
       >
+        <EngagementTracker />
         <Header />
         <main className="min-h-screen">{children}</main>
         <Footer />

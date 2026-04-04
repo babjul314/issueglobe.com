@@ -15,10 +15,43 @@ export default function Footer() {
                 Issue<span className="text-blue-400">Globe</span>
               </span>
             </Link>
-            <p className="text-sm">
+            <p className="text-sm mb-4">
               Real-time trending topics from 30 countries around the world.
               Stay informed with what the world is searching for.
             </p>
+            {/* 소셜 링크 */}
+            <div className="flex items-center gap-4">
+              <a
+                href="https://twitter.com/issueglobe"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-white transition-colors"
+                title="Follow IssueGlobe on Twitter"
+                aria-label="Twitter"
+              >
+                𝕏
+              </a>
+              <a
+                href="https://linkedin.com/company/issueglobe"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-white transition-colors"
+                title="Follow IssueGlobe on LinkedIn"
+                aria-label="LinkedIn"
+              >
+                in
+              </a>
+              <a
+                href="https://www.youtube.com/@issueglobe"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-white transition-colors"
+                title="Subscribe to IssueGlobe on YouTube"
+                aria-label="YouTube"
+              >
+                ▶
+              </a>
+            </div>
           </div>
 
           <div>
