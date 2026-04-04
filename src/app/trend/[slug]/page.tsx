@@ -348,7 +348,19 @@ export default async function TrendPage({ params }: PageProps) {
             datePublished: trend.date,
             dateModified: trend.date,
             image: trend.imageUrl ? [trend.imageUrl] : undefined,
-            author: { "@type": "Organization", name: "IssueGlobe" },
+            author: [
+              {
+                "@type": "Organization",
+                name: "IssueGlobe",
+                url: "https://issueglobe.com",
+                logo: {
+                  "@type": "ImageObject",
+                  url: "https://issueglobe.com/logo.png",
+                  width: 250,
+                  height: 60
+                }
+              }
+            ],
             publisher: {
               "@type": "Organization",
               name: "IssueGlobe",
@@ -358,12 +370,23 @@ export default async function TrendPage({ params }: PageProps) {
                 url: "https://issueglobe.com/logo.png",
                 width: 250,
                 height: 60
+              },
+              contact: {
+                "@type": "ContactPoint",
+                contactType: "Customer Support",
+                url: "https://issueglobe.com"
               }
             },
             keywords: [trend.title, ...trend.relatedQueries],
             articleBody: trend.detail || trend.summary,
             inLanguage: country?.lang || "en",
             isAccessibleForFree: true,
+            articleSection: "Trending",
+            sourceOrganization: {
+              "@type": "Organization",
+              name: "IssueGlobe",
+              url: "https://issueglobe.com"
+            }
           }),
         }}
       />
@@ -422,6 +445,51 @@ export default async function TrendPage({ params }: PageProps) {
               bestRating: 5,
               worstRating: 1
             } : undefined
+          }),
+        }}
+      />
+
+      {/* FAQ Schema for Common Questions */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: [
+              {
+                "@type": "Question",
+                name: `Why is "${trend.title}" trending in ${country?.name}?`,
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: trend.summary || `"${trend.title}" is trending because it has received significant search volume from people in ${country?.name}. This typically indicates high public interest or relevance to current events.`
+                }
+              },
+              {
+                "@type": "Question",
+                name: `What is the search volume for "${trend.title}"?`,
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: `"${trend.title}" has ${trend.traffic} searches in ${country?.name}. This metric represents the relative search popularity on Google.`
+                }
+              },
+              {
+                "@type": "Question",
+                name: `How are trends updated on IssueGlobe?`,
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "IssueGlobe updates trending topics hourly with real-time data from Google Trends. The data reflects the most searched terms across different countries and regions."
+                }
+              },
+              {
+                "@type": "Question",
+                name: `Where can I learn more about "${trend.title}"?`,
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: `We've curated a selection of related articles from trusted news sources to help you stay informed about "${trend.title}". Visit the "Related Articles" section on this page.`
+                }
+              }
+            ]
           }),
         }}
       />

@@ -230,6 +230,41 @@ export default async function HomePage() {
             },
             inLanguage: [country.lang, "en"],
             isAccessibleForFree: true,
+            mainEntity: {
+              "@type": "Thing",
+              name: "Trending Topics",
+              description: "Most searched topics and keywords globally"
+            }
+          }),
+        }}
+      />
+
+      {/* Service/Product Schema for Trust */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Service",
+            name: "Real-Time Trends Discovery",
+            description: "Discover what the world is searching for right now. Real-time trending topics updated hourly.",
+            provider: {
+              "@type": "Organization",
+              name: "IssueGlobe",
+              url: "https://issueglobe.com"
+            },
+            areaServed: [
+              "US", "KR", "JP", "GB", "DE", "FR", "BR", "IN", "AU", "CA",
+              "NL", "IT", "ES", "CH", "SE", "NO", "DK", "BE", "AT", "IE",
+              "NZ", "SG", "FI", "PL", "TW", "SA", "AE", "HK", "IL"
+            ],
+            availableLanguage: [country.lang, "en"],
+            offers: {
+              "@type": "Offer",
+              price: "0",
+              priceCurrency: "USD",
+              availability: "https://schema.org/InStock"
+            }
           }),
         }}
       />
