@@ -24,6 +24,9 @@ export const metadata: Metadata = {
   icons: {
     icon: "/icon.svg",
   },
+  verification: {
+    google: "hD-jk7NuJiSNRIz4valtSS8mLpcDKtkCQrX08a1huyI",
+  },
   keywords: [
     "trending topics",
     "google trends",
