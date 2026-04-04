@@ -338,6 +338,46 @@ export default async function TrendPage({ params }: PageProps) {
         </div>
       </div>
 
+      {/* Reference Links & Learn More */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="rounded-2xl bg-gray-50 border border-gray-200 p-6 shadow-sm">
+          <h2 className="text-lg font-bold text-gray-900 mb-4">Learn More</h2>
+          <div className="space-y-3">
+            <p className="text-sm text-gray-600">
+              Find out more about this trending topic:
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <a
+                href={`https://trends.google.com/trends/explore?q=${encodeURIComponent(trend.title)}&geo=${trend.country}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+              >
+                📊 Google Trends
+              </a>
+              {trend.sourceUrl && (
+                <a
+                  href={trend.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+                >
+                  🔗 Original Source
+                </a>
+              )}
+              <a
+                href={`https://www.google.com/search?q=${encodeURIComponent(trend.title)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+              >
+                🔍 Google Search
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Comments */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <div className="rounded-2xl bg-white border border-gray-200 p-6 shadow-sm">
