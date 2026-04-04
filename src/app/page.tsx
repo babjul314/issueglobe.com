@@ -1,4 +1,5 @@
 import { headers, cookies } from "next/headers";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { countries, getCountryByCode } from "@/data/countries";
 import { db } from "@/lib/firebase";
@@ -8,6 +9,45 @@ import TrendCard from "@/components/TrendCard";
 import CountrySelector from "@/components/CountrySelector";
 
 export const revalidate = 60; // 1분 캐시 (더 자주 새로고침)
+
+// Multi-language SEO descriptions for homepage
+const seoDescriptions: Record<string, { title: string; description: string }> = {
+  US: { title: "IssueGlobe - Trending Topics in the United States", description: "Discover what Americans are searching for right now. Real-time Google Trends data updated hourly." },
+  KR: { title: "이슈글로브 - 대한민국 실시간 검색어 순위", description: "한국에서 지금 가장 많이 검색하는 키워드를 실시간으로 확인하세요. 매시간 업데이트되는 구글 트렌드 데이터." },
+  JP: { title: "イシューグローブ - 日本のトレンド検索ランキング", description: "日本で今最も検索されているキーワードをリアルタイムで確認。Googleトレンドデータを毎時更新。" },
+  GB: { title: "IssueGlobe - Trending Topics in the UK", description: "See what the British are searching for right now. Real-time Google Trends data updated hourly." },
+  DE: { title: "IssueGlobe - Aktuelle Trends in Deutschland", description: "Entdecken Sie, wonach Deutsche suchen. Echtzeit Google Trends, stündlich aktualisiert." },
+  FR: { title: "IssueGlobe - Tendances en France", description: "Découvrez les sujets les plus recherchés en France en temps réel. Données Google Trends mises à jour toutes les heures." },
+  ES: { title: "IssueGlobe - Tendencias en España", description: "Descubre qué buscan los españoles en tiempo real. Google Trends actualizado cada hora." },
+  IT: { title: "IssueGlobe - Tendenze in Italia", description: "Scopri cosa cercano gli italiani in tempo reale. Dati Google Trends aggiornati ogni ora." },
+  BR: { title: "IssueGlobe - Assuntos do Momento no Brasil", description: "Descubra o que os brasileiros estão pesquisando agora. Dados do Google Trends atualizados a cada hora." },
+  CA: { title: "IssueGlobe - Trending Topics in Canada", description: "See what Canadians are searching for right now. Real-time Google Trends data updated hourly." },
+  AU: { title: "IssueGlobe - Trending Topics in Australia", description: "See what Australians are searching for right now. Real-time Google Trends data updated hourly." },
+  IN: { title: "IssueGlobe - भारत में ट्रेंडिंग", description: "भारत में अभी सबसे ज्यादा खोजे जाने वाले विषय देखें। प्रतिघंटा अपडेट होने वाला रीयल-टाइम डेटा।" },
+  NL: { title: "IssueGlobe - Trending in Nederland", description: "Ontdek waar Nederlanders nu naar zoeken. Realtime Google Trends data, elk uur bijgewerkt." },
+  TW: { title: "IssueGlobe - 台灣熱門搜尋", description: "查看台灣最熱門的搜尋關鍵字。Google Trends資料每小時更新。" },
+  HK: { title: "IssueGlobe - 香港熱門搜尋", description: "查看香港最熱門的搜尋關鍵字。Google Trends資料每小時更新。" },
+};
+
+export async function generateMetadata(): Promise<Metadata> {
+  const userCountry = await getUserCountry();
+  const seo = seoDescriptions[userCountry] || seoDescriptions.US;
+  const country = getCountryByCode(userCountry);
+
+  return {
+    title: seo.title,
+    description: seo.description,
+    openGraph: {
+      title: seo.title,
+      description: seo.description,
+      locale: country?.locale || "en_US",
+    },
+    twitter: {
+      title: seo.title,
+      description: seo.description,
+    },
+  };
+}
 
 async function getUserCountry(): Promise<string> {
   const cookieStore = await cookies();

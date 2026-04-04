@@ -58,6 +58,7 @@ export const metadata: Metadata = {
     description:
       "Discover what the world is searching for right now. Real-time trending topics from 30 countries.",
     siteName: "IssueGlobe",
+    locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",

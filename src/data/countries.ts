@@ -8,6 +8,8 @@ export interface Country {
   currency: string;
   region: string;
   color: string;
+  description?: string; // SEO description
+  descriptionLocal?: string; // SEO description in local language
   // UI 번역
   ui: {
     trending: string;
