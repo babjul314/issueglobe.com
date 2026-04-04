@@ -7,18 +7,8 @@ import { countries } from "@/data/countries";
 export default function Header() {
   const [showRegions, setShowRegions] = useState(false);
 
-  function getPreferredCountry() {
-    const match = document.cookie.match(/preferred-country=([^;]+)/);
-    return match ? match[1] : null;
-  }
-
   function goHome() {
-    const preferred = getPreferredCountry();
-    if (preferred) {
-      window.location.href = `/country/${preferred.toLowerCase()}`;
-    } else {
-      window.location.href = "/";
-    }
+    window.location.href = "/";
   }
 
   function selectCountry(code: string) {
