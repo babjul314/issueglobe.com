@@ -380,6 +380,34 @@ export default async function TrendPage({ params }: PageProps) {
         </div>
       </section>
 
+      {/* Global Awareness - Show if trending in other countries */}
+      {trend.title && (
+        <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="rounded-2xl bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200 p-6 shadow-sm">
+            <h2 className="text-lg font-bold text-gray-900 mb-4">🌍 Global Context</h2>
+            <p className="text-sm text-gray-700 mb-4">
+              <strong>"{trend.title}"</strong> is a trending topic in {country?.name}. This type of information helps us understand global search patterns and regional interests.
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+              {countries
+                .filter((c) => c.code !== trend.country)
+                .slice(0, 6)
+                .map((c) => (
+                  <Link
+                    key={c.code}
+                    href={`/country/${c.code.toLowerCase()}`}
+                    className="flex items-center gap-2 rounded-lg bg-white border border-gray-200 px-3 py-2 hover:border-purple-300 hover:bg-purple-50 transition-colors"
+                    title={`View trending topics in ${c.name}`}
+                  >
+                    <span>{c.flag}</span>
+                    <span className="font-medium text-gray-700">{c.name}</span>
+                  </Link>
+                ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Comments */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <div className="rounded-2xl bg-white border border-gray-200 p-6 shadow-sm">
@@ -501,6 +529,29 @@ export default async function TrendPage({ params }: PageProps) {
         }}
       />
 
+      {/* UpdateAction Schema - Mark content as fresh */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "UpdateAction",
+            agent: {
+              "@type": "Organization",
+              name: "IssueGlobe",
+              url: "https://issueglobe.com"
+            },
+            object: {
+              "@type": "NewsArticle",
+              url: `https://issueglobe.com/trend/${slug}`,
+              headline: trend.title
+            },
+            startTime: new Date(trend.date).toISOString(),
+            endTime: new Date(trend.date).toISOString()
+          }),
+        }}
+      />
+
       {/* FAQ Schema for Common Questions */}
       <script
         type="application/ld+json"
@@ -539,6 +590,24 @@ export default async function TrendPage({ params }: PageProps) {
                 acceptedAnswer: {
                   "@type": "Answer",
                   text: `We've curated a selection of related articles from trusted news sources to help you stay informed about "${trend.title}". Visit the "Related Articles" section on this page.`
+                }
+              },
+              ...(trend.relatedQueries.length > 0 ? [
+                {
+                  "@type": "Question",
+                  name: `What are people searching for related to "${trend.title}"?`,
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: `People are searching for related topics such as: ${trend.relatedQueries.slice(0, 3).join(', ')}. These related searches show what information people seek when looking up "${trend.title}".`
+                  }
+                }
+              ] : []),
+              {
+                "@type": "Question",
+                name: `Is "${trend.title}" trending globally?`,
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: `"${trend.title}" is trending in ${country?.name}. Check our trending pages for different countries to see if this topic is also trending in other regions around the world.`
                 }
               }
             ]
