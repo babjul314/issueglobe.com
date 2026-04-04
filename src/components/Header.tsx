@@ -40,12 +40,6 @@ export default function Header() {
               >
                 Regions
               </button>
-              <Link
-                href="/#trending"
-                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                Trending
-              </Link>
             </nav>
 
             <div className="flex items-center gap-3">
