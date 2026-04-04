@@ -181,6 +181,16 @@ export default async function TrendPage({ params }: PageProps) {
           {/* Main Content - 2/3 */}
           <div className="lg:col-span-2 space-y-8">
 
+            {/* Summary */}
+            {trend.summary && (
+              <section className="rounded-2xl bg-gradient-to-br from-blue-50 to-blue-50/50 border border-blue-200 p-6 shadow-sm">
+                <h2 className="text-lg font-bold text-gray-900 mb-3">Summary</h2>
+                <p className="text-base text-gray-700 leading-relaxed">
+                  {trend.summary}
+                </p>
+              </section>
+            )}
+
             {/* YouTube Videos */}
             <section className="rounded-2xl bg-white border border-gray-200 p-6 shadow-sm">
               <YouTubeVideos query={trend.title} />
