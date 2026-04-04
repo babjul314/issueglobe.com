@@ -112,7 +112,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200" translate="no">
+      <header className="sticky top-5 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 pt-5" translate="no">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <button onClick={goHome} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
