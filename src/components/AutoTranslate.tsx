@@ -23,17 +23,6 @@ export default function AutoTranslate({ userLang, pageLang }: AutoTranslateProps
             },
             "google_translate_element"
           );
-
-          // 번역 바가 나타난 후 body에 padding 추가
-          setTimeout(() => {
-            const bannerFrame = document.querySelector(
-              ".goog-te-banner-frame"
-            ) as HTMLElement;
-            if (bannerFrame && bannerFrame.style.display !== "none") {
-              const height = bannerFrame.offsetHeight || 57;
-              document.body.style.paddingTop = height + "px";
-            }
-          }, 500);
         } catch (e) {
           console.error("Translation init error:", e);
         }
@@ -55,29 +44,18 @@ export default function AutoTranslate({ userLang, pageLang }: AutoTranslateProps
 
   return (
     <>
-      <div id="google_translate_element" />
+      <div id="google_translate_element" style={{ display: "none" }} />
       <style
         dangerouslySetInnerHTML={{
           __html: `
             .goog-te-banner-frame {
-              position: fixed !important;
-              top: 96px !important;
-              left: 0 !important;
-              right: 0 !important;
-              z-index: 40 !important;
-              width: 100% !important;
+              display: none !important;
             }
-            .goog-te-banner-frame > div {
-              min-height: 57px;
+            .goog-te-gadget {
+              display: none !important;
             }
             body { top: 0 !important; margin-top: 0 !important; padding-top: 0 !important; }
-            main { padding-top: 57px; }
-            .goog-te-gadget {
-              color: transparent;
-            }
-            .goog-te-gadget .goog-te-combo {
-              display: none;
-            }
+            main { padding-top: 0; }
           `,
         }}
       />

@@ -56,29 +56,35 @@ export default function Header() {
     // Google Translate 드롭다운 찾기 및 변경 시도
     const tryChangeLanguage = () => {
       const select = document.querySelector(".goog-te-combo") as HTMLSelectElement;
-      if (select && select.value !== langCode) {
+      if (select) {
         select.value = langCode;
 
-        // 여러 이벤트 방식 시도
+        // 모바일 호환 다중 이벤트 방식
         select.dispatchEvent(new Event("change", { bubbles: true, cancelable: true }));
+        select.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
         select.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
         select.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
+        select.dispatchEvent(new TouchEvent("touchstart", { bubbles: true }));
+        select.dispatchEvent(new TouchEvent("touchend", { bubbles: true }));
+
+        // 강제 클릭 이벤트
+        const clickEvent = new MouseEvent("click", { bubbles: true, cancelable: true, view: window });
+        select.dispatchEvent(clickEvent);
 
         return true;
       }
       return false;
     };
 
-    // 즉시 시도하고, 실패하면 재시도
-    if (!tryChangeLanguage()) {
-      let attempts = 0;
-      const interval = setInterval(() => {
-        if (tryChangeLanguage() || attempts >= 30) {
-          clearInterval(interval);
-        }
-        attempts++;
-      }, 150);
-    }
+    // 즉시 시도하고, 실패하면 재시도 (더 많은 시도)
+    let attempts = 0;
+    const maxAttempts = 50;
+    const interval = setInterval(() => {
+      if (tryChangeLanguage() || attempts >= maxAttempts) {
+        clearInterval(interval);
+      }
+      attempts++;
+    }, 100);
   }
 
   // 처음 로드 시 초기 나라 저장 및 언어 로드
@@ -108,24 +114,34 @@ export default function Header() {
       .find((row) => row.startsWith("preferred-language="))
       ?.split("=")[1];
 
-    if (savedLang) {
-      setCurrentLang(savedLang);
-      // Google Translate이 로드되면 자동으로 언어 변경
-      setTimeout(() => {
+    const applyLanguage = (lang: string) => {
+      let attempts = 0;
+      const maxAttempts = 50;
+      const interval = setInterval(() => {
         const select = document.querySelector(".goog-te-combo") as HTMLSelectElement;
         if (select) {
-          select.value = savedLang;
-          select.dispatchEvent(new Event("change", { bubbles: true }));
+          select.value = lang;
+          select.dispatchEvent(new Event("change", { bubbles: true, cancelable: true }));
+          select.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
+          select.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+          clearInterval(interval);
+        } else if (attempts >= maxAttempts) {
+          clearInterval(interval);
         }
-      }, 1000);
+        attempts++;
+      }, 200);
+    };
+
+    if (savedLang) {
+      setCurrentLang(savedLang);
+      setTimeout(() => applyLanguage(savedLang), 1000);
     } else {
       // HTML lang 속성 기반으로 언어 감지
       const htmlLang = document.documentElement.lang || "en";
       const langCode = htmlLang.split("-")[0];
       if (LANGUAGES.some((l) => l.code === langCode) && langCode !== "en") {
         setCurrentLang(langCode);
-        // Google Translate 로드 후 언어 변경
-        setTimeout(() => selectLanguage(langCode), 1500);
+        setTimeout(() => applyLanguage(langCode), 1500);
       }
     }
   }, []);
