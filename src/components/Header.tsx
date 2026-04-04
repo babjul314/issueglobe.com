@@ -46,6 +46,16 @@ export default function Header() {
               </button>
             </nav>
 
+            {/* 모바일 메뉴 */}
+            <nav className="md:hidden flex items-center gap-3">
+              <button
+                onClick={() => setShowRegions(true)}
+                className="text-2xl hover:opacity-70 transition-opacity"
+              >
+                🌍
+              </button>
+            </nav>
+
             <div className="flex items-center gap-3">
               <div className="relative">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
@@ -64,19 +74,19 @@ export default function Header() {
             onClick={() => setShowRegions(false)}
           />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-96 overflow-y-auto">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900">Select Region</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900">Select Region</h2>
                 <button
                   onClick={() => setShowRegions(false)}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
-              <div className="p-4 grid grid-cols-2 gap-2">
+              <div className="p-3 sm:p-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {countries.map((c) => (
                   <button
                     key={c.code}
