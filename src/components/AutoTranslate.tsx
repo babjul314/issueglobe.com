@@ -9,7 +9,7 @@ interface AutoTranslateProps {
 
 export default function AutoTranslate({ userLang, pageLang }: AutoTranslateProps) {
   useEffect(() => {
-    // Google Translate 스크립트 로드
+    // Google Translate 초기화 콜백
     // @ts-expect-error google translate callback
     window.googleTranslateElementInit = () => {
       // @ts-expect-error google translate global
@@ -23,13 +23,22 @@ export default function AutoTranslate({ userLang, pageLang }: AutoTranslateProps
             },
             "google_translate_element"
           );
+
+          // IP 기반 언어로 자동 번역 설정
+          setTimeout(() => {
+            const select = document.querySelector(".goog-te-combo") as HTMLSelectElement;
+            if (select && userLang && userLang !== "en") {
+              select.value = userLang;
+              select.dispatchEvent(new Event("change", { bubbles: true }));
+            }
+          }, 500);
         } catch (e) {
           console.error("Translation init error:", e);
         }
       }
     };
 
-    // 스크립트 로드
+    // Google Translate 스크립트 로드
     if (!document.getElementById("google-translate-script")) {
       const script = document.createElement("script");
       script.id = "google-translate-script";
@@ -40,7 +49,7 @@ export default function AutoTranslate({ userLang, pageLang }: AutoTranslateProps
       // @ts-expect-error google translate callback
       window.googleTranslateElementInit();
     }
-  }, [pageLang]);
+  }, [userLang, pageLang]);
 
   return (
     <>
@@ -48,14 +57,9 @@ export default function AutoTranslate({ userLang, pageLang }: AutoTranslateProps
       <style
         dangerouslySetInnerHTML={{
           __html: `
-            .goog-te-banner-frame {
-              display: none !important;
-            }
-            .goog-te-gadget {
-              display: none !important;
-            }
+            .goog-te-banner-frame { display: none !important; }
+            .goog-te-gadget { display: none !important; }
             body { top: 0 !important; margin-top: 0 !important; padding-top: 0 !important; }
-            main { padding-top: 0; }
           `,
         }}
       />

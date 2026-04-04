@@ -1,31 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { countries } from "@/data/countries";
 
-const LANGUAGES = [
-  { code: "en", name: "English", flag: "🇬🇧" },
-  { code: "ko", name: "한국어", flag: "🇰🇷" },
-  { code: "ja", name: "日本語", flag: "🇯🇵" },
-  { code: "zh", name: "中文", flag: "🇨🇳" },
-  { code: "de", name: "Deutsch", flag: "🇩🇪" },
-  { code: "fr", name: "Français", flag: "🇫🇷" },
-  { code: "es", name: "Español", flag: "🇪🇸" },
-  { code: "it", name: "Italiano", flag: "🇮🇹" },
-  { code: "pt", name: "Português", flag: "🇧🇷" },
-  { code: "nl", name: "Nederlands", flag: "🇳🇱" },
-  { code: "sv", name: "Svenska", flag: "🇸🇪" },
-  { code: "pl", name: "Polski", flag: "🇵🇱" },
-  { code: "ar", name: "العربية", flag: "🇸🇦" },
-  { code: "he", name: "עברית", flag: "🇮🇱" },
-  { code: "hi", name: "हिन्दी", flag: "🇮🇳" },
-];
-
 export default function Header() {
   const [showRegions, setShowRegions] = useState(false);
-  const [showLanguages, setShowLanguages] = useState(false);
-  const [currentLang, setCurrentLang] = useState("en");
 
   function goHome() {
     const match = document.cookie.match(/initial-country=([^;]+)/);
@@ -48,57 +28,15 @@ export default function Header() {
     window.location.href = `/country/${code.toLowerCase()}`;
   }
 
-  function selectLanguage(langCode: string) {
-    setCurrentLang(langCode);
-    document.cookie = `preferred-language=${langCode};path=/;max-age=${60 * 60 * 24 * 365}`;
-    setShowLanguages(false);
-
-    // Google Translate 드롭다운 찾기 및 변경 시도
-    const tryChangeLanguage = () => {
-      const select = document.querySelector(".goog-te-combo") as HTMLSelectElement;
-      if (select) {
-        select.value = langCode;
-
-        // 모바일 호환 다중 이벤트 방식
-        select.dispatchEvent(new Event("change", { bubbles: true, cancelable: true }));
-        select.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
-        select.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
-        select.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
-        select.dispatchEvent(new TouchEvent("touchstart", { bubbles: true }));
-        select.dispatchEvent(new TouchEvent("touchend", { bubbles: true }));
-
-        // 강제 클릭 이벤트
-        const clickEvent = new MouseEvent("click", { bubbles: true, cancelable: true, view: window });
-        select.dispatchEvent(clickEvent);
-
-        return true;
-      }
-      return false;
-    };
-
-    // 즉시 시도하고, 실패하면 재시도 (더 많은 시도)
-    let attempts = 0;
-    const maxAttempts = 50;
-    const interval = setInterval(() => {
-      if (tryChangeLanguage() || attempts >= maxAttempts) {
-        clearInterval(interval);
-      }
-      attempts++;
-    }, 100);
-  }
-
-  // 처음 로드 시 초기 나라 저장 및 언어 로드
-  useEffect(() => {
-    // 1. 현재 페이지에서 country code 감지
-    const pathname = typeof window !== "undefined" ? window.location.pathname : "";
+  // 초기 나라 저장 (페이지 로드 시)
+  if (typeof window !== "undefined") {
+    const pathname = window.location.pathname;
     let currentCountry: string | null = null;
 
-    // URL에서 country code 추출 (/country/kr 형식)
     if (pathname.startsWith("/country/")) {
       currentCountry = pathname.split("/")[2]?.toUpperCase() || null;
     }
 
-    // 2. initial-country 저장 (아직 없을 때만)
     const existingInitial = document.cookie
       .split("; ")
       .find((row) => row.startsWith("initial-country="))
@@ -107,44 +45,7 @@ export default function Header() {
     if (!existingInitial && currentCountry) {
       document.cookie = `initial-country=${currentCountry};path=/;max-age=${60 * 60 * 24 * 365}`;
     }
-
-    // 3. 언어 설정
-    const savedLang = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("preferred-language="))
-      ?.split("=")[1];
-
-    const applyLanguage = (lang: string) => {
-      let attempts = 0;
-      const maxAttempts = 50;
-      const interval = setInterval(() => {
-        const select = document.querySelector(".goog-te-combo") as HTMLSelectElement;
-        if (select) {
-          select.value = lang;
-          select.dispatchEvent(new Event("change", { bubbles: true, cancelable: true }));
-          select.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
-          select.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
-          clearInterval(interval);
-        } else if (attempts >= maxAttempts) {
-          clearInterval(interval);
-        }
-        attempts++;
-      }, 200);
-    };
-
-    if (savedLang) {
-      setCurrentLang(savedLang);
-      setTimeout(() => applyLanguage(savedLang), 1000);
-    } else {
-      // HTML lang 속성 기반으로 언어 감지
-      const htmlLang = document.documentElement.lang || "en";
-      const langCode = htmlLang.split("-")[0];
-      if (LANGUAGES.some((l) => l.code === langCode) && langCode !== "en") {
-        setCurrentLang(langCode);
-        setTimeout(() => applyLanguage(langCode), 1500);
-      }
-    }
-  }, []);
+  }
 
   return (
     <>
@@ -178,12 +79,6 @@ export default function Header() {
             {/* 모바일 메뉴 */}
             <nav className="md:hidden flex items-center gap-3">
               <button
-                onClick={() => setShowLanguages(!showLanguages)}
-                className="text-2xl hover:opacity-70 transition-opacity"
-              >
-                🌐
-              </button>
-              <button
                 onClick={() => setShowRegions(true)}
                 className="text-2xl hover:opacity-70 transition-opacity"
               >
@@ -192,45 +87,6 @@ export default function Header() {
             </nav>
 
             <div className="flex items-center gap-4">
-              {/* 언어 선택 드롭다운 (데스크톱) */}
-              <div className="relative hidden sm:block">
-                <button
-                  onClick={() => setShowLanguages(!showLanguages)}
-                  className="flex items-center gap-1 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-2 py-1 rounded hover:bg-gray-100"
-                  title="Change language"
-                >
-                  <span className="text-lg">🌐</span>
-                  <span className="text-xs uppercase">{currentLang}</span>
-                </button>
-
-                {showLanguages && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setShowLanguages(false)}
-                    />
-                    <div className="absolute right-0 top-full mt-2 z-50 w-48 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-                      {LANGUAGES.map((lang) => (
-                        <button
-                          key={lang.code}
-                          onClick={() => selectLanguage(lang.code)}
-                          className={`w-full flex items-center gap-2 px-4 py-3 text-left text-sm transition-colors border-b border-gray-100 last:border-b-0 ${
-                            currentLang === lang.code
-                              ? "bg-blue-50 text-blue-600 font-semibold"
-                              : "hover:bg-gray-50"
-                          }`}
-                        >
-                          <span className="text-lg">{lang.flag}</span>
-                          <span>{lang.name}</span>
-                          {currentLang === lang.code && (
-                            <span className="ml-auto text-blue-600">✓</span>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
 
               <div className="relative">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
@@ -240,54 +96,6 @@ export default function Header() {
           </div>
         </div>
       </header>
-
-      {/* Languages Modal (Mobile) */}
-      {showLanguages && (
-        <div className="sm:hidden">
-          <>
-            <div
-              className="fixed inset-0 z-40 bg-black/50"
-              onClick={() => setShowLanguages(false)}
-            />
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
-                  <h2 className="text-lg sm:text-xl font-bold text-gray-900">Select Language</h2>
-                  <button
-                    onClick={() => setShowLanguages(false)}
-                    className="text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-                <div className="p-3 sm:p-4">
-                  {LANGUAGES.map((lang) => (
-                    <button
-                      key={lang.code}
-                      onClick={() => selectLanguage(lang.code)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left mb-2 transition-colors ${
-                        currentLang === lang.code
-                          ? "bg-blue-50 text-blue-600 font-semibold border border-blue-200"
-                          : "hover:bg-gray-50 border border-transparent hover:border-gray-200"
-                      }`}
-                    >
-                      <span className="text-2xl">{lang.flag}</span>
-                      <div className="flex-1">
-                        <p className="font-semibold text-gray-900">{lang.name}</p>
-                      </div>
-                      {currentLang === lang.code && (
-                        <span className="text-blue-600">✓</span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </>
-        </div>
-      )}
 
       {/* Regions Modal */}
       {showRegions && (
