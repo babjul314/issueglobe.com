@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import Image from "next/image";
 
 interface Article {
   url: string;
@@ -54,11 +55,17 @@ export default function RelatedArticles({ articles }: RelatedArticlesProps) {
           >
             {article.image && (
               <div className="relative w-full h-40 bg-gray-200 overflow-hidden">
-                <img
+                <Image
                   src={article.image}
                   alt={article.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 288px"
+                  className="object-cover group-hover:scale-105 transition-transform duration-300"
                   loading="lazy"
+                  quality={75}
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
                 />
               </div>
             )}

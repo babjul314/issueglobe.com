@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { headers, cookies } from "next/headers";
 import { countries, getCountryByCode } from "@/data/countries";
 import { db } from "@/lib/firebase";
@@ -155,11 +156,14 @@ export default async function TrendPage({ params }: PageProps) {
       >
         {trend.imageUrl && (
           <div className="absolute inset-0">
-            <img
+            <Image
               src={trend.imageUrl}
               alt={`${trend.title} - Trending in ${country?.name}`}
+              fill
               className="w-full h-full object-cover opacity-20"
               loading="lazy"
+              quality={50}
+              sizes="100vw"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
           </div>

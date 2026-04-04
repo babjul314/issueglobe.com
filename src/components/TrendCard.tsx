@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { TrendItem } from "@/lib/google-trends";
 import { getCountryByCode } from "@/data/countries";
 
@@ -19,11 +20,15 @@ export default function TrendCard({ trend, rank }: TrendCardProps) {
         {/* Left: Rank + Image */}
         <div className="relative sm:w-48 shrink-0">
           {trend.imageUrl ? (
-            <div className="relative h-40 sm:h-full w-full">
-              <img
+            <div className="relative h-40 sm:h-full w-full overflow-hidden">
+              <Image
                 src={trend.imageUrl}
                 alt={trend.title}
-                className="w-full h-full object-cover"
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 768px) 192px, 192px"
+                className="object-cover"
+                loading="lazy"
+                quality={75}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
             </div>
