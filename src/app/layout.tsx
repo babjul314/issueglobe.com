@@ -95,25 +95,33 @@ export default function RootLayout({
       <head>
         <link rel="canonical" href="https://issueglobe.com" />
         <link rel="alternate" hrefLang="x-default" href="https://issueglobe.com" />
-        <link rel="alternate" hrefLang="ko" href="https://issueglobe.com/country/kr" />
-        <link rel="alternate" hrefLang="ja" href="https://issueglobe.com/country/jp" />
         <link rel="alternate" hrefLang="en" href="https://issueglobe.com/country/us" />
+        <link rel="alternate" hrefLang="ja" href="https://issueglobe.com/country/jp" />
         <link rel="alternate" hrefLang="de" href="https://issueglobe.com/country/de" />
+        <link rel="alternate" hrefLang="en-GB" href="https://issueglobe.com/country/gb" />
         <link rel="alternate" hrefLang="fr" href="https://issueglobe.com/country/fr" />
-        <link rel="alternate" hrefLang="es" href="https://issueglobe.com/country/es" />
-        <link rel="alternate" hrefLang="pt" href="https://issueglobe.com/country/br" />
-        <link rel="alternate" hrefLang="it" href="https://issueglobe.com/country/it" />
-        <link rel="alternate" hrefLang="nl" href="https://issueglobe.com/country/nl" />
-        <link rel="alternate" hrefLang="sv" href="https://issueglobe.com/country/se" />
-        <link rel="alternate" hrefLang="pl" href="https://issueglobe.com/country/pl" />
-        <link rel="alternate" hrefLang="zh-TW" href="https://issueglobe.com/country/tw" />
-        <link rel="alternate" hrefLang="zh-HK" href="https://issueglobe.com/country/hk" />
-        <link rel="alternate" hrefLang="ar" href="https://issueglobe.com/country/ae" />
-        <link rel="alternate" hrefLang="he" href="https://issueglobe.com/country/il" />
-        <link rel="alternate" hrefLang="fi" href="https://issueglobe.com/country/fi" />
-        <link rel="alternate" hrefLang="da" href="https://issueglobe.com/country/dk" />
-        <link rel="alternate" hrefLang="nb" href="https://issueglobe.com/country/no" />
         <link rel="alternate" hrefLang="hi" href="https://issueglobe.com/country/in" />
+        <link rel="alternate" hrefLang="pt-BR" href="https://issueglobe.com/country/br" />
+        <link rel="alternate" hrefLang="ko" href="https://issueglobe.com/country/kr" />
+        <link rel="alternate" hrefLang="it" href="https://issueglobe.com/country/it" />
+        <link rel="alternate" hrefLang="es" href="https://issueglobe.com/country/es" />
+        <link rel="alternate" hrefLang="es-MX" href="https://issueglobe.com/country/mx" />
+        <link rel="alternate" hrefLang="en-AU" href="https://issueglobe.com/country/au" />
+        <link rel="alternate" hrefLang="nl" href="https://issueglobe.com/country/nl" />
+        <link rel="alternate" hrefLang="de-CH" href="https://issueglobe.com/country/ch" />
+        <link rel="alternate" hrefLang="sv" href="https://issueglobe.com/country/se" />
+        <link rel="alternate" hrefLang="nl-BE" href="https://issueglobe.com/country/be" />
+        <link rel="alternate" hrefLang="de-AT" href="https://issueglobe.com/country/at" />
+        <link rel="alternate" hrefLang="nb" href="https://issueglobe.com/country/no" />
+        <link rel="alternate" hrefLang="da" href="https://issueglobe.com/country/dk" />
+        <link rel="alternate" hrefLang="pl" href="https://issueglobe.com/country/pl" />
+        <link rel="alternate" hrefLang="en-IE" href="https://issueglobe.com/country/ie" />
+        <link rel="alternate" hrefLang="en-NZ" href="https://issueglobe.com/country/nz" />
+        <link rel="alternate" hrefLang="fi" href="https://issueglobe.com/country/fi" />
+        <link rel="alternate" hrefLang="en-SG" href="https://issueglobe.com/country/sg" />
+        <link rel="alternate" hrefLang="ar" href="https://issueglobe.com/country/sa" />
+        <link rel="alternate" hrefLang="ar-AE" href="https://issueglobe.com/country/ae" />
+        <link rel="alternate" hrefLang="en-CA" href="https://issueglobe.com/country/ca" />
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-C6D6ME59JT" />
         <script
           dangerouslySetInnerHTML={{
