@@ -7,6 +7,20 @@ import { countries } from "@/data/countries";
 export default function Header() {
   const [showRegions, setShowRegions] = useState(false);
 
+  function getPreferredCountry() {
+    const match = document.cookie.match(/preferred-country=([^;]+)/);
+    return match ? match[1] : null;
+  }
+
+  function goHome() {
+    const preferred = getPreferredCountry();
+    if (preferred) {
+      window.location.href = `/country/${preferred.toLowerCase()}`;
+    } else {
+      window.location.href = "/";
+    }
+  }
+
   function selectCountry(code: string) {
     document.cookie = `preferred-country=${code};path=/;max-age=${60 * 60 * 24 * 365}`;
     setShowRegions(false);
@@ -18,22 +32,22 @@ export default function Header() {
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200" translate="no">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <Link href="/" className="flex items-center gap-2">
+            <button onClick={goHome} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
                 <span className="text-white text-sm font-bold">IG</span>
               </div>
               <span className="font-bold text-xl text-gray-900">
                 Issue<span className="text-blue-600">Globe</span>
               </span>
-            </Link>
+            </button>
 
             <nav className="hidden md:flex items-center gap-6">
-              <Link
-                href="/"
+              <button
+                onClick={goHome}
                 className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
               >
                 Home
-              </Link>
+              </button>
               <button
                 onClick={() => setShowRegions(true)}
                 className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
