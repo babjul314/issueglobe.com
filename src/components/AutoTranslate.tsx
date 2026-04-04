@@ -61,7 +61,7 @@ export default function AutoTranslate({ userLang, pageLang }: AutoTranslateProps
           __html: `
             .goog-te-banner-frame {
               position: fixed !important;
-              top: 64px !important;
+              top: 96px !important;
               left: 0 !important;
               right: 0 !important;
               z-index: 40 !important;
