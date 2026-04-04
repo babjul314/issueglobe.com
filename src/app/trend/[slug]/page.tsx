@@ -73,10 +73,37 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description,
       type: "article",
       publishedTime: trend.date,
-      images: trend.imageUrl ? [{ url: trend.imageUrl }] : undefined,
+      modifiedTime: trend.date,
+      authors: ["IssueGlobe"],
+      section: "Trending",
+      tags: [trend.title, ...trend.relatedQueries.slice(0, 5)],
+      images: trend.imageUrl ? [
+        {
+          url: trend.imageUrl,
+          width: 1200,
+          height: 630,
+          alt: trend.title,
+          type: "image/jpeg",
+        }
+      ] : [
+        {
+          url: "https://issueglobe.com/og-image.png",
+          width: 1200,
+          height: 630,
+          alt: title,
+          type: "image/png",
+        }
+      ],
       url: `https://issueglobe.com/trend/${slug}`,
+      locale: country?.locale || "en_US",
     },
-    twitter: { card: "summary_large_image", title, description },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: trend.imageUrl ? [trend.imageUrl] : ["https://issueglobe.com/og-image.png"],
+      creator: "@issueglobe",
+    },
     alternates: { canonical: `https://issueglobe.com/trend/${slug}` },
   };
 }

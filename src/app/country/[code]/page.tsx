@@ -75,11 +75,22 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       type: "website",
       locale: country.locale,
       siteName: "IssueGlobe",
+      url: `https://issueglobe.com/country/${code.toLowerCase()}`,
+      images: [
+        {
+          url: `https://issueglobe.com/og-image.png`,
+          width: 1200,
+          height: 630,
+          alt: `IssueGlobe - Trending in ${country.name}`,
+          type: "image/png",
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: seo.title,
       description: seo.description,
+      images: [`https://issueglobe.com/og-image.png`],
     },
     alternates: {
       canonical: `https://issueglobe.com/country/${code.toLowerCase()}`,
