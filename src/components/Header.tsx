@@ -1,14 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { countries } from "@/data/countries";
 
+const LANGUAGES = [
+  { code: "en", name: "English", flag: "🇬🇧" },
+  { code: "ko", name: "한국어", flag: "🇰🇷" },
+  { code: "ja", name: "日本語", flag: "🇯🇵" },
+  { code: "zh", name: "中文", flag: "🇨🇳" },
+  { code: "de", name: "Deutsch", flag: "🇩🇪" },
+  { code: "fr", name: "Français", flag: "🇫🇷" },
+  { code: "es", name: "Español", flag: "🇪🇸" },
+  { code: "it", name: "Italiano", flag: "🇮🇹" },
+  { code: "pt", name: "Português", flag: "🇧🇷" },
+  { code: "nl", name: "Nederlands", flag: "🇳🇱" },
+  { code: "sv", name: "Svenska", flag: "🇸🇪" },
+  { code: "pl", name: "Polski", flag: "🇵🇱" },
+  { code: "ar", name: "العربية", flag: "🇸🇦" },
+  { code: "he", name: "עברית", flag: "🇮🇱" },
+  { code: "hi", name: "हिन्दी", flag: "🇮🇳" },
+];
+
 export default function Header() {
   const [showRegions, setShowRegions] = useState(false);
+  const [showLanguages, setShowLanguages] = useState(false);
+  const [currentLang, setCurrentLang] = useState("en");
 
   function goHome() {
-    // 최초 들어온 나라로 돌아가기
     const match = document.cookie.match(/initial-country=([^;]+)/);
     const initialCountry = match ? match[1] : null;
 
@@ -20,7 +39,6 @@ export default function Header() {
   }
 
   function selectCountry(code: string) {
-    // 첫 선택이면 initial-country 저장
     if (!document.cookie.includes("initial-country=")) {
       document.cookie = `initial-country=${code};path=/;max-age=${60 * 60 * 24 * 365}`;
     }
@@ -29,6 +47,40 @@ export default function Header() {
     setShowRegions(false);
     window.location.href = `/country/${code.toLowerCase()}`;
   }
+
+  function selectLanguage(langCode: string) {
+    setCurrentLang(langCode);
+    document.cookie = `preferred-language=${langCode};path=/;max-age=${60 * 60 * 24 * 365}`;
+    setShowLanguages(false);
+
+    // Google Translate 트리거
+    const select = document.querySelector(".goog-te-combo") as HTMLSelectElement;
+    if (select) {
+      select.value = langCode;
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+  }
+
+  // 처음 로드 시 IP 기반 언어 또는 저장된 언어 로드
+  useEffect(() => {
+    const savedLang = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("preferred-language="))
+      ?.split("=")[1];
+
+    if (savedLang) {
+      setCurrentLang(savedLang);
+    } else {
+      // HTML lang 속성 기반으로 언어 감지
+      const htmlLang = document.documentElement.lang || "en";
+      const langCode = htmlLang.split("-")[0];
+      if (LANGUAGES.some((l) => l.code === langCode) && langCode !== "en") {
+        setCurrentLang(langCode);
+        // 언어 선택 함수를 직접 호출하지 말고 나중에 호출
+        setTimeout(() => selectLanguage(langCode), 500);
+      }
+    }
+  }, []);
 
   return (
     <>
@@ -69,7 +121,47 @@ export default function Header() {
               </button>
             </nav>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
+              {/* 언어 선택 드롭다운 */}
+              <div className="relative hidden sm:block">
+                <button
+                  onClick={() => setShowLanguages(!showLanguages)}
+                  className="flex items-center gap-1 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-2 py-1 rounded hover:bg-gray-100"
+                  title="Change language"
+                >
+                  <span className="text-lg">🌐</span>
+                  <span className="text-xs uppercase">{currentLang}</span>
+                </button>
+
+                {showLanguages && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setShowLanguages(false)}
+                    />
+                    <div className="absolute right-0 top-full mt-2 z-50 w-48 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                      {LANGUAGES.map((lang) => (
+                        <button
+                          key={lang.code}
+                          onClick={() => selectLanguage(lang.code)}
+                          className={`w-full flex items-center gap-2 px-4 py-3 text-left text-sm transition-colors border-b border-gray-100 last:border-b-0 ${
+                            currentLang === lang.code
+                              ? "bg-blue-50 text-blue-600 font-semibold"
+                              : "hover:bg-gray-50"
+                          }`}
+                        >
+                          <span className="text-lg">{lang.flag}</span>
+                          <span>{lang.name}</span>
+                          {currentLang === lang.code && (
+                            <span className="ml-auto text-blue-600">✓</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+
               <div className="relative">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
               </div>
