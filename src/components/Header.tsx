@@ -8,10 +8,23 @@ export default function Header() {
   const [showRegions, setShowRegions] = useState(false);
 
   function goHome() {
-    window.location.href = "/";
+    // 최초 들어온 나라로 돌아가기
+    const match = document.cookie.match(/initial-country=([^;]+)/);
+    const initialCountry = match ? match[1] : null;
+
+    if (initialCountry) {
+      window.location.href = `/country/${initialCountry.toLowerCase()}`;
+    } else {
+      window.location.href = "/";
+    }
   }
 
   function selectCountry(code: string) {
+    // 첫 선택이면 initial-country 저장
+    if (!document.cookie.includes("initial-country=")) {
+      document.cookie = `initial-country=${code};path=/;max-age=${60 * 60 * 24 * 365}`;
+    }
+
     document.cookie = `preferred-country=${code};path=/;max-age=${60 * 60 * 24 * 365}`;
     setShowRegions(false);
     window.location.href = `/country/${code.toLowerCase()}`;
@@ -91,11 +104,11 @@ export default function Header() {
                   <button
                     key={c.code}
                     onClick={() => selectCountry(c.code)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-left hover:bg-blue-50 transition-colors group"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-left hover:bg-blue-50 transition-colors group border border-transparent hover:border-blue-200"
                   >
-                    <span className="text-2xl">{c.flag}</span>
+                    <span className="text-3xl sm:text-4xl flex-shrink-0">{c.flag}</span>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 group-hover:text-blue-600">{c.name}</p>
+                      <p className="font-semibold text-gray-900 group-hover:text-blue-600 text-sm sm:text-base">{c.name}</p>
                       <p className="text-xs text-gray-400">{c.nameLocal}</p>
                     </div>
                   </button>
