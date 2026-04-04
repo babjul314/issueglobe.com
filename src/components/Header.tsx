@@ -53,11 +53,31 @@ export default function Header() {
     document.cookie = `preferred-language=${langCode};path=/;max-age=${60 * 60 * 24 * 365}`;
     setShowLanguages(false);
 
-    // Google Translate 트리거
-    const select = document.querySelector(".goog-te-combo") as HTMLSelectElement;
-    if (select) {
-      select.value = langCode;
-      select.dispatchEvent(new Event("change", { bubbles: true }));
+    // Google Translate 드롭다운 찾기 및 변경 시도
+    const tryChangeLanguage = () => {
+      const select = document.querySelector(".goog-te-combo") as HTMLSelectElement;
+      if (select && select.value !== langCode) {
+        select.value = langCode;
+
+        // 여러 이벤트 방식 시도
+        select.dispatchEvent(new Event("change", { bubbles: true, cancelable: true }));
+        select.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+        select.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
+
+        return true;
+      }
+      return false;
+    };
+
+    // 즉시 시도하고, 실패하면 재시도
+    if (!tryChangeLanguage()) {
+      let attempts = 0;
+      const interval = setInterval(() => {
+        if (tryChangeLanguage() || attempts >= 30) {
+          clearInterval(interval);
+        }
+        attempts++;
+      }, 150);
     }
   }
 
@@ -70,14 +90,22 @@ export default function Header() {
 
     if (savedLang) {
       setCurrentLang(savedLang);
+      // Google Translate이 로드되면 자동으로 언어 변경
+      setTimeout(() => {
+        const select = document.querySelector(".goog-te-combo") as HTMLSelectElement;
+        if (select) {
+          select.value = savedLang;
+          select.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      }, 1000);
     } else {
       // HTML lang 속성 기반으로 언어 감지
       const htmlLang = document.documentElement.lang || "en";
       const langCode = htmlLang.split("-")[0];
       if (LANGUAGES.some((l) => l.code === langCode) && langCode !== "en") {
         setCurrentLang(langCode);
-        // 언어 선택 함수를 직접 호출하지 말고 나중에 호출
-        setTimeout(() => selectLanguage(langCode), 500);
+        // Google Translate 로드 후 언어 변경
+        setTimeout(() => selectLanguage(langCode), 1500);
       }
     }
   }, []);
