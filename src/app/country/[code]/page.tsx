@@ -8,6 +8,7 @@ import { TrendItem } from "@/lib/google-trends";
 import TrendCard from "@/components/TrendCard";
 import AutoTranslate from "@/components/AutoTranslate";
 import Link from "next/link";
+import { clusterTrendsBySemantic, buildSemanticRelations, generateEntitySchema } from "@/lib/semantic-clustering";
 
 export const revalidate = 60; // ISR: 60초마다 재검증
 
@@ -196,6 +197,50 @@ export default async function CountryPage({ params }: PageProps) {
         </div>
       </section>
 
+      {/* Semantic Insights - Topic Clustering */}
+      {trends.length > 3 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 p-6 shadow-sm">
+            <h2 className="text-lg font-bold text-gray-900 mb-4">📊 Trending Themes</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Topics grouped by semantic relevance to help you discover related trends.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {clusterTrendsBySemantic(trends)
+                .slice(0, 4)
+                .map((cluster) => (
+                  <div
+                    key={cluster.id}
+                    className="rounded-lg bg-white border border-blue-100 p-4"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="font-semibold text-gray-900">
+                        {cluster.theme}
+                      </h3>
+                      <span className="text-xs font-medium bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                        {cluster.trends.length} topic{cluster.trends.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                      {cluster.description}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {cluster.keywords.slice(0, 3).map((keyword) => (
+                        <span
+                          key={keyword}
+                          className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-100"
+                        >
+                          {keyword}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Related Countries */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-16">
         <h2 className="text-xl font-bold text-gray-900 mb-4">
@@ -272,6 +317,41 @@ export default async function CountryPage({ params }: PageProps) {
           }),
         }}
       />
+
+      {/* Semantic Relationships Schema - Knowledge Graph Optimization */}
+      {trends.length > 1 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Thing",
+              "@id": `https://issueglobe.com/country/${code.toLowerCase()}`,
+              name: `Trending in ${country.name}`,
+              description: `Real-time trending topics in ${country.name}`,
+              hasPart: trends.slice(0, 15).map((t) => ({
+                "@type": "Thing",
+                "@id": `https://issueglobe.com/trend/${t.slug}`,
+                name: t.title,
+                url: `https://issueglobe.com/trend/${t.slug}`,
+              })),
+            }),
+          }}
+        />
+      )}
+
+      {/* Entity-based Schema for top trends */}
+      {trends.slice(0, 5).map((trend) => (
+        <script
+          key={`entity-${trend.slug}`}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(
+              generateEntitySchema(trend, country.code, trends.slice(0, 5).filter((t) => t.slug !== trend.slug), country.lang)
+            ),
+          }}
+        />
+      ))}
     </>
   );
 }

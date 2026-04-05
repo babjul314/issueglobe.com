@@ -11,6 +11,7 @@ import Comments from "@/components/Comments";
 import AutoTranslate from "@/components/AutoTranslate";
 import YouTubeVideos from "@/components/YouTubeVideos";
 import RelatedArticles from "@/components/RelatedArticles";
+import { getRelatedTrendsForLinking } from "@/lib/internal-linking";
 
 export const revalidate = 300; // 5분 캐시 (트렌드는 덜 자주 변경됨)
 
@@ -403,6 +404,38 @@ export default async function TrendPage({ params }: PageProps) {
                     <span className="font-medium text-gray-700">{c.name}</span>
                   </Link>
                 ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Semantically Related Trends - Internal Linking */}
+      {relatedTrends.length > 0 && (
+        <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="rounded-2xl bg-white border border-gray-200 p-6 shadow-sm">
+            <h2 className="text-lg font-bold text-gray-900 mb-4">🔗 Related Trending Topics</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Discover other trending topics that are semantically related to {trend.title}.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {getRelatedTrendsForLinking(trend, relatedTrends, 4).map((relatedTrend) => (
+                <Link
+                  key={relatedTrend.slug}
+                  href={`/trend/${relatedTrend.slug}`}
+                  className="group rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 p-4 hover:border-blue-300 hover:from-blue-50 hover:to-blue-100 transition-all"
+                  title={relatedTrend.title}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2">
+                      {relatedTrend.title}
+                    </h3>
+                    <span className="text-xs font-medium bg-blue-100 text-blue-700 px-2 py-1 rounded whitespace-nowrap ml-2 flex-shrink-0">
+                      {Math.round(relatedTrend.relevance * 100)}% match
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500">{relatedTrend.traffic} searches</p>
+                </Link>
+              ))}
             </div>
           </div>
         </section>
