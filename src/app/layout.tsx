@@ -37,6 +37,7 @@ export const metadata: Metadata = {
     "Discover what the world is searching for right now. IssueGlobe brings you real-time trending topics from 30 countries including US, UK, Korea, Japan, Germany, France and more. Updated hourly with live Google Trends data.",
   icons: {
     icon: "/icon.svg",
+    apple: "/logo.svg",
   },
   formatDetection: {
     telephone: false,
@@ -112,12 +113,23 @@ export const metadata: Metadata = {
       "Discover what the world is searching for right now. Real-time trending topics from 30 countries.",
     siteName: "IssueGlobe",
     locale: "en_US",
+    images: [
+      {
+        url: `https://issueglobe.com/api/og-image?title=${encodeURIComponent("Trending Topics from 30 Countries")}&description=${encodeURIComponent("Real-time insights into global search trends")}&country=${encodeURIComponent("Global")}`,
+        width: 1200,
+        height: 630,
+        alt: "IssueGlobe - Real-Time Global Trending Topics",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "IssueGlobe - Real-Time Global Trending Topics",
     description:
       "Discover what the world is searching for right now. Real-time trending topics from 30 countries.",
+    images: [
+      `https://issueglobe.com/api/og-image?title=${encodeURIComponent("Trending Topics from 30 Countries")}&description=${encodeURIComponent("Real-time insights into global search trends")}&country=${encodeURIComponent("Global")}`,
+    ],
   },
   robots: {
     index: true,

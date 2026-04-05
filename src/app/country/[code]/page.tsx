@@ -79,7 +79,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       url: `https://issueglobe.com/country/${code.toLowerCase()}`,
       images: [
         {
-          url: `https://issueglobe.com/og-image.png`,
+          url: `https://issueglobe.com/api/og-image?title=${encodeURIComponent(`Trending in ${country.name}`)}&description=${encodeURIComponent(seo.description)}&country=${encodeURIComponent(country.name)}`,
           width: 1200,
           height: 630,
           alt: `IssueGlobe - Trending in ${country.name}`,
@@ -91,7 +91,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       card: "summary_large_image",
       title: seo.title,
       description: seo.description,
-      images: [`https://issueglobe.com/og-image.png`],
+      images: [`https://issueglobe.com/api/og-image?title=${encodeURIComponent(`Trending in ${country.name}`)}&description=${encodeURIComponent(seo.description)}&country=${encodeURIComponent(country.name)}`],
     },
     alternates: {
       canonical: `https://issueglobe.com/country/${code.toLowerCase()}`,

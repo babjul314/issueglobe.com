@@ -88,22 +88,23 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       authors: ["IssueGlobe"],
       section: "Trending",
       tags: enhanced.articleKeywords,
-      images: trend.imageUrl ? [
+      images: [
         {
-          url: trend.imageUrl,
-          width: 1200,
-          height: 630,
-          alt: ogImageAlt,
-          type: "image/jpeg",
-        }
-      ] : [
-        {
-          url: "https://issueglobe.com/og-image.png",
+          url: `https://issueglobe.com/api/og-image?title=${encodeURIComponent(trend.title)}&description=${encodeURIComponent(enhanced.ogDescription)}&country=${encodeURIComponent(country?.name || "Global")}`,
           width: 1200,
           height: 630,
           alt: ogImageAlt,
           type: "image/png",
-        }
+        },
+        ...(trend.imageUrl ? [
+          {
+            url: trend.imageUrl,
+            width: 1200,
+            height: 630,
+            alt: ogImageAlt,
+            type: "image/jpeg",
+          }
+        ] : []),
       ],
       url: `https://issueglobe.com/trend/${slug}`,
       locale: country?.locale || "en_US",
@@ -112,7 +113,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       card: "summary_large_image",
       title: enhanced.twitterTitle,
       description: enhanced.twitterDescription,
-      images: trend.imageUrl ? [trend.imageUrl] : ["https://issueglobe.com/og-image.png"],
+      images: [
+        `https://issueglobe.com/api/og-image?title=${encodeURIComponent(trend.title)}&description=${encodeURIComponent(enhanced.twitterDescription)}&country=${encodeURIComponent(country?.name || "Global")}`,
+        ...(trend.imageUrl ? [trend.imageUrl] : []),
+      ],
       creator: "@issueglobe",
     },
     alternates: { canonical: `https://issueglobe.com/trend/${slug}` },
