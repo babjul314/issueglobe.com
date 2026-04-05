@@ -64,34 +64,97 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const country = getCountryByCode(code);
   if (!country) return {};
 
+  // 실시간 트렌드 데이터 가져오기
+  const trends = await getTrendsFromFirebase(country.code);
+  const topTrends = trends.slice(0, 3).map((t) => t.title);
+  const topKeyword = topTrends[0] || "";
+
+  // 동적 제목 생성 (1위 키워드 포함)
+  let dynamicTitle = "";
+  if (topKeyword) {
+    const titleTemplates: Record<string, string> = {
+      KR: `현재 한국 1위: ${topKeyword} 실시간 트렌드 | IssueGlobe`,
+      JP: `🔥 日本1位: ${topKeyword} - リアルタイムトレンド | IssueGlobe`,
+      US: `#1 Trending in USA: ${topKeyword} | IssueGlobe`,
+      GB: `#1 Trending in UK: ${topKeyword} | IssueGlobe`,
+      DE: `🔥 #1 in Deutschland: ${topKeyword} | IssueGlobe`,
+      FR: `🔥 N°1 en France: ${topKeyword} | IssueGlobe`,
+      IT: `🔥 #1 in Italia: ${topKeyword} | IssueGlobe`,
+      ES: `🔥 #1 en España: ${topKeyword} | IssueGlobe`,
+      BR: `🔥 #1 no Brasil: ${topKeyword} | IssueGlobe`,
+      IN: `#1 Trending in India: ${topKeyword} | IssueGlobe`,
+      AU: `#1 Trending in Australia: ${topKeyword} | IssueGlobe`,
+      CA: `#1 Trending in Canada: ${topKeyword} | IssueGlobe`,
+      NL: `🔥 #1 in Nederland: ${topKeyword} | IssueGlobe`,
+      CH: `🔥 #1 in der Schweiz: ${topKeyword} | IssueGlobe`,
+      SE: `🔥 #1 in Sverige: ${topKeyword} | IssueGlobe`,
+      MX: `🔥 #1 en México: ${topKeyword} | IssueGlobe`,
+      NO: `🔥 #1 in Norge: ${topKeyword} | IssueGlobe`,
+      DK: `🔥 #1 in Danmark: ${topKeyword} | IssueGlobe`,
+      BE: `🔥 #1 in België: ${topKeyword} | IssueGlobe`,
+      AT: `🔥 #1 in Österreich: ${topKeyword} | IssueGlobe`,
+      IE: `#1 Trending in Ireland: ${topKeyword} | IssueGlobe`,
+      SG: `#1 Trending in Singapore: ${topKeyword} | IssueGlobe`,
+      IL: `🔥 #1 בישראל: ${topKeyword} | IssueGlobe`,
+      AE: `🔥 #1 في الإمارات: ${topKeyword} | IssueGlobe`,
+      NZ: `#1 Trending in NZ: ${topKeyword} | IssueGlobe`,
+      FI: `🔥 #1 in Suomi: ${topKeyword} | IssueGlobe`,
+      PL: `🔥 #1 w Polsce: ${topKeyword} | IssueGlobe`,
+      TW: `🔥 台灣1位: ${topKeyword} | IssueGlobe`,
+      SA: `🔥 #1 في السعودية: ${topKeyword} | IssueGlobe`,
+      HK: `🔥 香港1位: ${topKeyword} | IssueGlobe`,
+    };
+    dynamicTitle = titleTemplates[country.code] || `🔥 #1 Trending in ${country.name}: ${topKeyword} | IssueGlobe`;
+  }
+
+  // 폴백: 동적 제목이 없으면 기존 정적 제목 사용
   const seo = getLocalizedMeta(country);
+  const finalTitle = dynamicTitle || seo.title;
+
+  // 동적 설명 생성
+  const dynamicDescription = topKeyword
+    ? `Discover why ${topKeyword} is trending #1 in ${country.name}. Real-time trending searches and analysis updated hourly.`
+    : seo.description;
+
+  // OG 이미지 URL 생성 (trends 파라미터 포함)
+  const trendsList = topTrends.join(",");
+  const ogImageParams = new URLSearchParams({
+    title: `Trending in ${country.name}`,
+    description: dynamicDescription,
+    country: country.name,
+    ...(trendsList && { trends: trendsList }),
+  });
+
+  const ogImageUrl = `https://issueglobe.com/api/og-image?${ogImageParams.toString()}`;
 
   return {
-    title: seo.title,
-    description: seo.description,
-    keywords: seo.keywords,
+    title: finalTitle,
+    description: dynamicDescription,
+    keywords: topKeyword
+      ? [topKeyword, ...seo.keywords].slice(0, 10)
+      : seo.keywords,
     openGraph: {
-      title: seo.title,
-      description: seo.description,
+      title: finalTitle,
+      description: dynamicDescription,
       type: "website",
       locale: country.locale,
       siteName: "IssueGlobe",
       url: `https://issueglobe.com/country/${code.toLowerCase()}`,
       images: [
         {
-          url: `https://issueglobe.com/api/og-image?title=${encodeURIComponent(`Trending in ${country.name}`)}&description=${encodeURIComponent(seo.description)}&country=${encodeURIComponent(country.name)}`,
+          url: ogImageUrl,
           width: 1200,
           height: 630,
-          alt: `IssueGlobe - Trending in ${country.name}`,
+          alt: `IssueGlobe - #1 Trending: ${topKeyword || country.name}`,
           type: "image/png",
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: seo.title,
-      description: seo.description,
-      images: [`https://issueglobe.com/api/og-image?title=${encodeURIComponent(`Trending in ${country.name}`)}&description=${encodeURIComponent(seo.description)}&country=${encodeURIComponent(country.name)}`],
+      title: finalTitle,
+      description: dynamicDescription,
+      images: [ogImageUrl],
     },
     alternates: {
       canonical: `https://issueglobe.com/country/${code.toLowerCase()}`,

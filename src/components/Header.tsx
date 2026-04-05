@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { countries } from "@/data/countries";
 
 export default function Header() {
   const [showRegions, setShowRegions] = useState(false);
+  const [showLanguages, setShowLanguages] = useState(false);
+  const [currentLanguage, setCurrentLanguage] = useState("en");
 
   function goHome() {
     const match = document.cookie.match(/initial-country=([^;]+)/);
@@ -47,6 +49,48 @@ export default function Header() {
     }
   }
 
+  // 언어 선택 로직
+  useEffect(() => {
+    const savedLang = localStorage.getItem("preferred-language") || "en";
+    setCurrentLanguage(savedLang);
+
+    // Google Translate 언어 변경
+    setTimeout(() => {
+      const select = document.querySelector(".goog-te-combo") as HTMLSelectElement;
+      if (select) {
+        select.value = savedLang;
+        select.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    }, 100);
+  }, []);
+
+  const changeLanguage = (langCode: string) => {
+    setCurrentLanguage(langCode);
+    localStorage.setItem("preferred-language", langCode);
+
+    // Google Translate 언어 변경
+    setTimeout(() => {
+      const select = document.querySelector(".goog-te-combo") as HTMLSelectElement;
+      if (select) {
+        select.value = langCode;
+        select.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    }, 100);
+
+    setShowLanguages(false);
+  };
+
+  const languageFlags: Record<string, { name: string; flag: string }> = {
+    en: { name: "English", flag: "🇺🇸" },
+    ko: { name: "한국어", flag: "🇰🇷" },
+    ja: { name: "日本語", flag: "🇯🇵" },
+    de: { name: "Deutsch", flag: "🇩🇪" },
+    fr: { name: "Français", flag: "🇫🇷" },
+    pt: { name: "Português", flag: "🇧🇷" },
+    es: { name: "Español", flag: "🇪🇸" },
+    hi: { name: "हिन्दी", flag: "🇮🇳" },
+  };
+
   return (
     <>
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200" translate="no">
@@ -86,13 +130,51 @@ export default function Header() {
               </button>
             </nav>
 
-            <div className="flex items-center gap-4">
+            {/* Language Selector */}
+            <div className="relative hidden sm:block">
+              <button
+                onClick={() => setShowLanguages(!showLanguages)}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium text-gray-700"
+              >
+                <span className="text-lg">{languageFlags[currentLanguage]?.flag || "🌐"}</span>
+                <span className="hidden sm:inline">{languageFlags[currentLanguage]?.name.split(" ")[0] || "Language"}</span>
+              </button>
 
-              <div className="relative">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              </div>
-              <span className="text-xs text-gray-500">Live</span>
+              {/* Language Dropdown */}
+              {showLanguages && (
+                <>
+                  <div
+                    className="fixed inset-0 z-30"
+                    onClick={() => setShowLanguages(false)}
+                  />
+                  <div className="absolute right-0 top-12 z-40 bg-white rounded-lg shadow-lg border border-gray-200 w-48">
+                    {Object.entries(languageFlags).map(([code, { name, flag }]) => (
+                      <button
+                        key={code}
+                        onClick={() => changeLanguage(code)}
+                        className={`w-full flex items-center gap-2 px-4 py-3 text-sm transition-colors ${
+                          currentLanguage === code
+                            ? "bg-blue-50 text-blue-600 font-medium"
+                            : "hover:bg-gray-50 text-gray-700"
+                        } ${code === "en" ? "border-b border-gray-100" : ""}`}
+                      >
+                        <span className="text-lg">{flag}</span>
+                        <span>{name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
+
+            {/* Mobile Language Button */}
+            <button
+              onClick={() => setShowLanguages(!showLanguages)}
+              className="sm:hidden text-2xl hover:opacity-70 transition-opacity"
+              title="Change Language"
+            >
+              {languageFlags[currentLanguage]?.flag || "🌐"}
+            </button>
           </div>
         </div>
       </header>

@@ -57,9 +57,29 @@ export default function AutoTranslate({ userLang, pageLang }: AutoTranslateProps
       <style
         dangerouslySetInnerHTML={{
           __html: `
-            .goog-te-banner-frame { display: none !important; }
-            .goog-te-gadget { display: none !important; }
-            body { top: 0 !important; margin-top: 0 !important; padding-top: 0 !important; }
+            /* Google Translate 위젯 완전 숨김 */
+            .goog-te-banner-frame { display: none !important; visibility: hidden !important; }
+            .goog-te-gadget { display: none !important; visibility: hidden !important; }
+            .goog-te-gadget-simple { display: none !important; visibility: hidden !important; }
+            .goog-te-bubble-frame { display: none !important; visibility: hidden !important; }
+            .goog-te-tooltip { display: none !important; visibility: hidden !important; }
+            .goog-te-toolbar-frame { display: none !important; visibility: hidden !important; }
+
+            /* 모든 번역 UI 요소 숨김 */
+            div.skiptranslate { display: none !important; }
+            .goog-te-spinner { display: none !important; }
+
+            /* Body 기본값 복원 */
+            body {
+              top: 0 !important;
+              margin-top: 0 !important;
+              padding-top: 0 !important;
+            }
+
+            /* 번역 후 텍스트 스타일 유지 */
+            body, * {
+              background-color: initial !important;
+            }
           `,
         }}
       />
