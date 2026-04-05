@@ -12,6 +12,7 @@ import AutoTranslate from "@/components/AutoTranslate";
 import YouTubeVideos from "@/components/YouTubeVideos";
 import RelatedArticles from "@/components/RelatedArticles";
 import { getRelatedTrendsForLinking } from "@/lib/internal-linking";
+import { generateEnhancedMetaTags, generateOptimizedAltText } from "@/lib/dynamic-meta-optimization";
 
 export const revalidate = 300; // 5분 캐시 (트렌드는 덜 자주 변경됨)
 
@@ -64,27 +65,35 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!trend) return {};
 
   const country = getCountryByCode(trend.country);
-  const title = `${trend.title} - Trending in ${country?.name || trend.country}`;
-  const description = trend.summary || trend.description || `Trending topic: ${trend.title} in ${country?.name}. Search volume: ${trend.traffic}`;
+
+  // 향상된 메타 태그 생성
+  const enhanced = generateEnhancedMetaTags(
+    trend,
+    country?.name || trend.country,
+    undefined // position을 모르므로 undefined로 설정
+  );
+
+  const ogImageAlt = generateOptimizedAltText(trend, country?.name || trend.country, "hero");
 
   return {
-    title,
-    description,
+    title: enhanced.title,
+    description: enhanced.description,
+    keywords: enhanced.keywords,
     openGraph: {
-      title,
-      description,
+      title: enhanced.ogTitle,
+      description: enhanced.ogDescription,
       type: "article",
       publishedTime: trend.date,
       modifiedTime: trend.date,
       authors: ["IssueGlobe"],
       section: "Trending",
-      tags: [trend.title, ...trend.relatedQueries.slice(0, 5)],
+      tags: enhanced.articleKeywords,
       images: trend.imageUrl ? [
         {
           url: trend.imageUrl,
           width: 1200,
           height: 630,
-          alt: trend.title,
+          alt: ogImageAlt,
           type: "image/jpeg",
         }
       ] : [
@@ -92,7 +101,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
           url: "https://issueglobe.com/og-image.png",
           width: 1200,
           height: 630,
-          alt: title,
+          alt: ogImageAlt,
           type: "image/png",
         }
       ],
@@ -101,8 +110,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     twitter: {
       card: "summary_large_image",
-      title,
-      description,
+      title: enhanced.twitterTitle,
+      description: enhanced.twitterDescription,
       images: trend.imageUrl ? [trend.imageUrl] : ["https://issueglobe.com/og-image.png"],
       creator: "@issueglobe",
     },
@@ -159,7 +168,7 @@ export default async function TrendPage({ params }: PageProps) {
           <div className="absolute inset-0">
             <Image
               src={trend.imageUrl}
-              alt={`${trend.title} - Trending topic image in ${country?.name}`}
+              alt={generateOptimizedAltText(trend, country?.name || trend.country, "hero")}
               title={`${trend.title} - ${trend.traffic} searches`}
               fill
               className="w-full h-full object-cover opacity-20"
