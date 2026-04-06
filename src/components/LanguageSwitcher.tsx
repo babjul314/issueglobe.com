@@ -78,6 +78,14 @@ export default function LanguageSwitcher() {
   // 자국 사용자가 자국 페이지 볼 때: 버튼만 숨기고 스크립트는 유지
   const hideButton = currentPageCountry && userCountry && currentPageCountry === userCountry;
 
+  // 자국 사용자가 자국 페이지를 볼 때 googtrans 쿠키 삭제 (자동 번역 방지)
+  useEffect(() => {
+    if (hideButton) {
+      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" + window.location.hostname;
+    }
+  }, [hideButton]);
+
   return (
     <>
       {/* Google Translate Element (항상 존재해야 함) */}
