@@ -5,14 +5,22 @@ export function proxy(request: NextRequest) {
 
   // 루트 경로(/)일 때만 처리
   if (pathname === "/") {
+    const xVercelIp = request.headers.get("x-vercel-ip-country");
+    const cfIp = request.headers.get("cf-ipcountry");
+
+    console.log(`[PROXY] 루트(/) 요청 감지`);
+    console.log(`[PROXY] x-vercel-ip-country: ${xVercelIp}`);
+    console.log(`[PROXY] cf-ipcountry: ${cfIp}`);
+
     // IP 기반 국가 감지 (최우선)
-    let ipCountry = request.headers.get("x-vercel-ip-country") ||
-                    request.headers.get("cf-ipcountry");
+    let ipCountry = xVercelIp || cfIp;
 
     if (ipCountry && /^[A-Z]{2}$/.test(ipCountry)) {
-      console.log(`[IP-Routing] Detected country by IP: ${ipCountry}`);
+      console.log(`[PROXY] IP로 리다이렉트: ${ipCountry} -> /country/${ipCountry.toLowerCase()}`);
       return NextResponse.redirect(new URL(`/country/${ipCountry.toLowerCase()}`, request.url));
     }
+
+    console.log(`[PROXY] IP 유효하지 않음: ${ipCountry}`);
 
     // IP 감지 실패 시: Accept-Language에서 감지
     const acceptLanguage = request.headers.get("accept-language") || "";

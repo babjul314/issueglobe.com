@@ -161,17 +161,31 @@ export default async function HomePage() {
   const headersList = await headers();
   const ipCountry = headersList.get("x-vercel-ip-country") ||
                     headersList.get("cf-ipcountry");
+  const xVercelIp = headersList.get("x-vercel-ip-country");
+  const cfIp = headersList.get("cf-ipcountry");
+
+  console.log(`[HomePage] 루트(/) 페이지 접속`);
+  console.log(`[HomePage] x-vercel-ip-country: ${xVercelIp}`);
+  console.log(`[HomePage] cf-ipcountry: ${cfIp}`);
+  console.log(`[HomePage] ipCountry 최종값: ${ipCountry}`);
+  console.log(`[HomePage] IP 유효성 검사: ${ipCountry && /^[A-Z]{2}$/.test(ipCountry)}`);
+  console.log(`[HomePage] 미국 아님: ${ipCountry !== "US"}`);
 
   if (ipCountry && /^[A-Z]{2}$/.test(ipCountry) && ipCountry !== "US") {
     // 미국이 아니면 해당 국가 페이지로 리다이렉트
     const validCountry = countries.find((c) => c.code === ipCountry);
+    console.log(`[HomePage] 리다이렉트 실행: IP=${ipCountry}, 대상=/country/${validCountry?.code.toLowerCase()}`);
     if (validCountry) {
       redirect(`/country/${validCountry.code.toLowerCase()}`);
     }
   }
 
+  console.log(`[HomePage] 리다이렉트 스킵 - 홈페이지 렌더링 중`);
   const countryCode = await getUserCountry();
   const country = getCountryByCode(countryCode)!;
+  console.log(`[HomePage] getUserCountry 반환값: ${countryCode}`);
+  console.log(`[HomePage] 렌더링 국가: ${country.name} (${country.code})`);
+
   const trends = await getTrendsFromFirebase(country.code);
   const ui = country.ui;
 
