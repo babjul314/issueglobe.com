@@ -93,7 +93,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200" translate="no">
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200" translate="no">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-24">
             <button onClick={goHome} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
@@ -183,7 +183,7 @@ export default function Header() {
       {showRegions && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/50"
+            className="fixed inset-0 z-40 bg-black/80"
             onClick={() => setShowRegions(false)}
           />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

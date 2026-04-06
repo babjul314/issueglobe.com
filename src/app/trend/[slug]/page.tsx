@@ -206,7 +206,7 @@ export default async function TrendPage({ params }: PageProps) {
               quality={50}
               sizes="100vw"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-black/90" />
           </div>
         )}
 
@@ -229,7 +229,7 @@ export default async function TrendPage({ params }: PageProps) {
           <div className="flex flex-wrap items-center gap-3 mb-4">
             <Link
               href={`/country/${trend.country.toLowerCase()}`}
-              className="inline-flex items-center gap-1.5 rounded-full bg-white/20 backdrop-blur-sm px-3 py-1 text-sm font-medium text-white hover:bg-white/30 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-full bg-white/50 backdrop-blur-sm px-3 py-1 text-sm font-medium text-white hover:bg-white/70 transition-colors"
             >
               {country?.flag} {country?.name}
             </Link>

@@ -22,7 +22,7 @@ export default function CountrySelector({ currentCode }: CountrySelectorProps) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 rounded-full bg-white/50 backdrop-blur-sm px-4 py-2 text-sm font-medium text-white hover:bg-white/60 transition-colors border border-white/60 shadow-lg"
+        className="flex items-center gap-2 rounded-full bg-white/80 backdrop-blur-sm px-4 py-2 text-sm font-medium text-white hover:bg-white/90 transition-colors border border-white/80 shadow-lg"
       >
         <span className="text-lg">{current?.flag}</span>
         <span className="hidden sm:inline">{current?.name}</span>
