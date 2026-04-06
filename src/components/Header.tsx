@@ -1,16 +1,32 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { countries } from "@/data/countries";
-import AutoTranslator from "./LanguageSwitcher";
+import { useState, useEffect } from "react";
+import { countries, getCountryByCode } from "@/data/countries";
 
 export default function Header() {
   const [showRegions, setShowRegions] = useState(false);
+  const [ui, setUi] = useState({
+    home: "Home",
+    regions: "Regions",
+    selectRegion: "Select Region",
+  });
+
+  useEffect(() => {
+    const match = document.cookie.match(/initial-country=([^;]+)/);
+    const code = match?.[1]?.toUpperCase();
+    const country = code ? getCountryByCode(code) : null;
+    if (country) {
+      setUi({
+        home: country.ui.home,
+        regions: country.ui.regions,
+        selectRegion: country.ui.regions,
+      });
+    }
+  }, []);
 
   function goHome() {
     const match = document.cookie.match(/initial-country=([^;]+)/);
-    const initialCountry = match ? match[1] : null;
+    const initialCountry = match?.[1];
     window.location.href = initialCountry ? `/country/${initialCountry.toLowerCase()}` : "/";
   }
 
@@ -40,34 +56,27 @@ export default function Header() {
             </button>
 
             {/* 우측 메뉴 */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              {/* 데스크탑 Home, Regions 링크 */}
-              <nav className="hidden md:flex items-center gap-4 mr-2">
-                <button
-                  onClick={goHome}
-                  className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
-                >
-                  Home
+            <div className="flex items-center gap-3">
+              <nav className="hidden md:flex items-center gap-4">
+                <button onClick={goHome} className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
+                  {ui.home}
                 </button>
                 <button
                   onClick={() => setShowRegions(true)}
-                  className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+                  className="flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
                 >
-                  Regions
+                  🌍 {ui.regions}
                 </button>
               </nav>
 
               {/* 모바일 Regions 버튼 */}
               <button
                 onClick={() => setShowRegions(true)}
-                className="md:hidden text-xl hover:opacity-70 transition-opacity"
-                aria-label="Select region"
+                className="md:hidden flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+                aria-label={ui.selectRegion}
               >
-                🌍
+                🌍 <span className="text-xs">{ui.regions}</span>
               </button>
-
-              {/* 자동 번역 (UI 없음) */}
-              <AutoTranslator />
             </div>
           </div>
         </div>
@@ -76,14 +85,11 @@ export default function Header() {
       {/* Regions Modal */}
       {showRegions && (
         <>
-          <div
-            className="fixed inset-0 z-40 bg-black/80"
-            onClick={() => setShowRegions(false)}
-          />
+          <div className="fixed inset-0 z-40 bg-black/80" onClick={() => setShowRegions(false)} />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" translate="no">
               <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
-                <h2 className="text-lg font-bold text-gray-900">Select Region</h2>
+                <h2 className="text-lg font-bold text-gray-900">{ui.selectRegion}</h2>
                 <button
                   onClick={() => setShowRegions(false)}
                   className="text-gray-400 hover:text-gray-600 transition-colors p-1"
