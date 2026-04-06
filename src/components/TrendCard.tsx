@@ -104,21 +104,16 @@ export default function TrendCard({ trend, rank }: TrendCardProps) {
             )}
 
             {/* Tags */}
-            <div className="flex items-center justify-between">
-              <div className="flex flex-wrap gap-1.5" role="list" aria-label="Related searches">
-                {trend.relatedQueries.slice(0, 3).map((q) => (
-                  <span
-                    key={q}
-                    role="listitem"
-                    className="inline-block rounded-full bg-gray-100 px-2.5 py-0.5 text-xs text-gray-600 font-medium"
-                  >
-                    {q}
-                  </span>
-                ))}
-              </div>
-              <span className="text-xs text-blue-500 font-medium group-hover:underline ml-2 shrink-0">
-                View details →
-              </span>
+            <div className="flex flex-wrap gap-1.5" role="list" aria-label="Related searches">
+              {trend.relatedQueries.slice(0, 3).map((q) => (
+                <span
+                  key={q}
+                  role="listitem"
+                  className="inline-block rounded-full bg-gray-100 px-2.5 py-0.5 text-xs text-gray-600 font-medium max-w-[140px] truncate"
+                >
+                  {q}
+                </span>
+              ))}
             </div>
           </div>
         </div>
