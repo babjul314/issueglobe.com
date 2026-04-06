@@ -73,6 +73,7 @@ async function getUserCountry(): Promise<string> {
   }
 
   const headersList = await headers();
+
   // Vercel IP 헤더 확인
   const detected = headersList.get("x-vercel-ip-country");
   if (detected) {
@@ -87,8 +88,33 @@ async function getUserCountry(): Promise<string> {
     if (valid) return cfCountry;
   }
 
-  // 기본값: KR (한국)
-  return "KR";
+  // 브라우저 언어 설정 확인 (Accept-Language 헤더)
+  const acceptLanguage = headersList.get("accept-language") || "";
+  const langMap: Record<string, string> = {
+    "ko": "KR",
+    "ja": "JP",
+    "de": "DE",
+    "fr": "FR",
+    "es": "ES",
+    "it": "IT",
+    "pt": "BR",
+    "nl": "NL",
+    "sv": "SE",
+    "no": "NO",
+    "da": "DK",
+    "fi": "FI",
+    "pl": "PL",
+    "zh": "TW",
+    "ar": "SA",
+  };
+
+  const primaryLang = acceptLanguage.split(",")[0]?.split("-")[0]?.toLowerCase();
+  if (primaryLang && langMap[primaryLang]) {
+    return langMap[primaryLang];
+  }
+
+  // 기본값: US
+  return "US";
 }
 
 async function getTrendsFromFirebase(countryCode: string): Promise<TrendItem[]> {
