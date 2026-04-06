@@ -13,6 +13,7 @@ import YouTubeVideos from "@/components/YouTubeVideos";
 import RelatedArticles from "@/components/RelatedArticles";
 import { getRelatedTrendsForLinking } from "@/lib/internal-linking";
 import { generateEnhancedMetaTags, generateOptimizedAltText } from "@/lib/dynamic-meta-optimization";
+import { injectFAQToPage } from "@/lib/faq-schema-generator";
 
 export const revalidate = 300; // 5분 캐시 (트렌드는 덜 자주 변경됨)
 
@@ -155,6 +156,15 @@ export default async function TrendPage({ params }: PageProps) {
   if (relatedTrends.length === 0 && country) {
     relatedTrends = (await fetchTrendsForCountry(country.code)).filter((t) => t.slug !== slug);
   }
+
+  // Phase 76: 동적 FAQ 생성
+  const { faqs, schema: faqSchema } = injectFAQToPage({
+    title: trend.title,
+    summary: trend.summary,
+    detail: trend.detail,
+    relatedQueries: trend.relatedQueries,
+    country: country?.name || trend.country,
+  });
 
   return (
     <>
@@ -454,6 +464,31 @@ export default async function TrendPage({ params }: PageProps) {
         </section>
       )}
 
+      {/* FAQ Section - Phase 76 */}
+      {faqs.length > 0 && (
+        <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="rounded-2xl bg-white border border-gray-200 p-6 shadow-sm">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">자주 묻는 질문 (FAQ)</h2>
+            <div className="space-y-3">
+              {faqs.map((faq, index) => (
+                <details
+                  key={index}
+                  className="group border border-gray-200 rounded-lg transition-all hover:border-blue-300"
+                >
+                  <summary className="flex items-center justify-between cursor-pointer p-4 hover:bg-blue-50 transition-colors">
+                    <span className="font-semibold text-gray-900">{faq.question}</span>
+                    <span className="text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+                  </summary>
+                  <div className="px-4 pb-4 text-gray-700 border-t border-gray-100 pt-4">
+                    {faq.answer}
+                  </div>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Comments */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <div className="rounded-2xl bg-white border border-gray-200 p-6 shadow-sm">
@@ -598,66 +633,11 @@ export default async function TrendPage({ params }: PageProps) {
         }}
       />
 
-      {/* FAQ Schema for Common Questions */}
+      {/* FAQ Schema - Phase 76: Dynamically generated from relatedQueries */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
-            mainEntity: [
-              {
-                "@type": "Question",
-                name: `Why is "${trend.title}" trending in ${country?.name}?`,
-                acceptedAnswer: {
-                  "@type": "Answer",
-                  text: trend.summary || `"${trend.title}" is trending because it has received significant search volume from people in ${country?.name}. This typically indicates high public interest or relevance to current events.`
-                }
-              },
-              {
-                "@type": "Question",
-                name: `What is the search volume for "${trend.title}"?`,
-                acceptedAnswer: {
-                  "@type": "Answer",
-                  text: `"${trend.title}" has ${trend.traffic} searches in ${country?.name}. This metric represents the relative search popularity on Google.`
-                }
-              },
-              {
-                "@type": "Question",
-                name: `How are trends updated on IssueGlobe?`,
-                acceptedAnswer: {
-                  "@type": "Answer",
-                  text: "IssueGlobe updates trending topics hourly with real-time data from Google Trends. The data reflects the most searched terms across different countries and regions."
-                }
-              },
-              {
-                "@type": "Question",
-                name: `Where can I learn more about "${trend.title}"?`,
-                acceptedAnswer: {
-                  "@type": "Answer",
-                  text: `We've curated a selection of related articles from trusted news sources to help you stay informed about "${trend.title}". Visit the "Related Articles" section on this page.`
-                }
-              },
-              ...(trend.relatedQueries.length > 0 ? [
-                {
-                  "@type": "Question",
-                  name: `What are people searching for related to "${trend.title}"?`,
-                  acceptedAnswer: {
-                    "@type": "Answer",
-                    text: `People are searching for related topics such as: ${trend.relatedQueries.slice(0, 3).join(', ')}. These related searches show what information people seek when looking up "${trend.title}".`
-                  }
-                }
-              ] : []),
-              {
-                "@type": "Question",
-                name: `Is "${trend.title}" trending globally?`,
-                acceptedAnswer: {
-                  "@type": "Answer",
-                  text: `"${trend.title}" is trending in ${country?.name}. Check our trending pages for different countries to see if this topic is also trending in other regions around the world.`
-                }
-              }
-            ]
-          }),
+          __html: faqSchema,
         }}
       />
     </>

@@ -20,6 +20,7 @@ export default function robots(): MetadataRoute.Robots {
     ],
     sitemap: [
       "https://issueglobe.com/sitemap.xml",
+      "https://issueglobe.com/news-sitemap.xml",
     ],
     host: "https://issueglobe.com",
   };

@@ -42,7 +42,7 @@ export default function TrendCard({ trend, rank }: TrendCardProps) {
             </div>
           )}
           <div
-            className="absolute top-3 left-3 w-10 h-10 rounded-full flex items-center justify-center text-lg font-black text-white shadow-lg"
+            className="absolute top-3 left-3 w-10 h-10 rounded-full flex items-center justify-center text-lg font-black text-white shadow-lg border-2 border-white"
             style={{ backgroundColor: country?.color || "#3B82F6" }}
           >
             {rank}
