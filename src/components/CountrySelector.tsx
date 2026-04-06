@@ -38,11 +38,11 @@ export default function CountrySelector({ currentCode }: CountrySelectorProps) {
 
       {open && (
         <>
-          <div className="fixed inset-0 z-40 bg-black/50" onClick={() => setOpen(false)} />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 z-40 bg-black/80" onClick={() => setOpen(false)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-transparent">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200">
               {/* Header */}
-              <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
+              <div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-300 p-4 flex items-center justify-between">
                 <h2 className="text-lg sm:text-xl font-bold text-gray-900">Select Region</h2>
                 <button
                   onClick={() => setOpen(false)}
