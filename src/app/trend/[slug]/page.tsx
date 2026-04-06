@@ -22,11 +22,11 @@ interface PageProps {
 
 async function getTrendsFromFirebase(countryCode: string): Promise<TrendItem[]> {
   try {
-    // 최근 90일 데이터 검색 (sitemap의 모든 트렌드를 포함하기 위함)
+    // 최근 30일 데이터 검색 (성능 최적화, 404 최소화)
     const allTrends: TrendItem[] = [];
     const now = new Date();
 
-    for (let i = 0; i < 90; i++) {
+    for (let i = 0; i < 30; i++) {
       const date = new Date(now);
       date.setDate(date.getDate() - i);
       const dateStr = date.toISOString().split("T")[0];
