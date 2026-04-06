@@ -7,7 +7,6 @@ import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
 import { TrendItem } from "@/lib/google-trends";
 import TrendCard from "@/components/TrendCard";
 import CountrySelector from "@/components/CountrySelector";
-import AutoTranslate from "@/components/AutoTranslate";
 
 export const revalidate = 30; // 30초 캐시 (매우 빠른 새로고침)
 
@@ -164,8 +163,6 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* 자동 번역 - 감지된 나라의 언어로 자동 번역 (페이지 기본은 영어) */}
-      <AutoTranslate userLang={country.lang} pageLang="en" />
 
       {/* Compact Hero - 스크롤 없이 바로 랭킹 보이도록 */}
       <section

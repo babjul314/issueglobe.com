@@ -6,7 +6,6 @@ import { db } from "@/lib/firebase";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { TrendItem } from "@/lib/google-trends";
 import TrendCard from "@/components/TrendCard";
-import AutoTranslate from "@/components/AutoTranslate";
 import Link from "next/link";
 import { clusterTrendsBySemantic, buildSemanticRelations, generateEntitySchema } from "@/lib/semantic-clustering";
 
@@ -213,8 +212,6 @@ export default async function CountryPage({ params }: PageProps) {
 
   return (
     <>
-      {/* 자동 번역: 유저 언어 ≠ 페이지 언어일 때 */}
-      <AutoTranslate userLang={userLang} pageLang={country.lang} />
 
       {/* Country Hero - Compact */}
       <section

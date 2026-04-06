@@ -8,7 +8,6 @@ import { db } from "@/lib/firebase";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { fetchTrendsForCountry, TrendItem } from "@/lib/google-trends";
 import Comments from "@/components/Comments";
-import AutoTranslate from "@/components/AutoTranslate";
 import YouTubeVideos from "@/components/YouTubeVideos";
 import RelatedArticles from "@/components/RelatedArticles";
 import { getRelatedTrendsForLinking } from "@/lib/internal-linking";
@@ -177,8 +176,6 @@ export default async function TrendPage({ params }: PageProps) {
 
   return (
     <>
-      {/* 자동 번역 */}
-      <AutoTranslate userLang={userLang} pageLang={country?.lang || "en"} />
 
       {/* Hero Banner */}
       <div
