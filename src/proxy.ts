@@ -17,7 +17,12 @@ export function proxy(request: NextRequest) {
 
     if (ipCountry && /^[A-Z]{2}$/.test(ipCountry)) {
       console.log(`[PROXY] IP로 리다이렉트: ${ipCountry} -> /country/${ipCountry.toLowerCase()}`);
-      return NextResponse.redirect(new URL(`/country/${ipCountry.toLowerCase()}`, request.url));
+      const response = NextResponse.redirect(new URL(`/country/${ipCountry.toLowerCase()}`, request.url));
+      response.cookies.set("initial-country", ipCountry, {
+        maxAge: 60 * 60 * 24 * 365,
+        path: "/",
+      });
+      return response;
     }
 
     console.log(`[PROXY] IP 유효하지 않음: ${ipCountry}`);
@@ -47,12 +52,23 @@ export function proxy(request: NextRequest) {
     const primaryLang = acceptLanguage.split(",")[0]?.split("-")[0]?.toLowerCase();
     if (primaryLang && langMap[primaryLang]) {
       console.log(`[IP-Routing] Using language: ${primaryLang} -> ${langMap[primaryLang]}`);
-      return NextResponse.redirect(new URL(`/country/${langMap[primaryLang].toLowerCase()}`, request.url));
+      const countryCode = langMap[primaryLang];
+      const response = NextResponse.redirect(new URL(`/country/${countryCode.toLowerCase()}`, request.url));
+      response.cookies.set("initial-country", countryCode, {
+        maxAge: 60 * 60 * 24 * 365,
+        path: "/",
+      });
+      return response;
     }
 
     // 기본값: KR (한국)
     console.log(`[IP-Routing] Using default: KR`);
-    return NextResponse.redirect(new URL("/country/kr", request.url));
+    const response = NextResponse.redirect(new URL("/country/kr", request.url));
+    response.cookies.set("initial-country", "KR", {
+      maxAge: 60 * 60 * 24 * 365,
+      path: "/",
+    });
+    return response;
   }
 
   return NextResponse.next();

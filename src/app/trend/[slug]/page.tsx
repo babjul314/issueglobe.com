@@ -22,11 +22,11 @@ interface PageProps {
 
 async function getTrendsFromFirebase(countryCode: string): Promise<TrendItem[]> {
   try {
-    // 개별 트렌드 페이지: 전체 데이터 범위에서 검색 (URL 직접 접속 시 모든 트렌드 찾기)
+    // 관련 트렌드: 최근 7일 데이터만 검색 (효율적 쿼리)
     const allTrends: TrendItem[] = [];
     const now = new Date();
 
-    for (let i = 0; i < 365; i++) {
+    for (let i = 0; i < 7; i++) {
       const date = new Date(now);
       date.setDate(date.getDate() - i);
       const dateStr = date.toISOString().split("T")[0];
@@ -49,28 +49,46 @@ async function getTrendsFromFirebase(countryCode: string): Promise<TrendItem[]> 
 }
 
 async function findTrendBySlug(slug: string): Promise<TrendItem | null> {
-  const decoded = decodeURIComponent(slug);
-  const countryCode = decoded.split("-")[0]?.toUpperCase();
-  if (!countryCode) return null;
+  try {
+    const decoded = decodeURIComponent(slug);
+    const countryCode = decoded.split("-")[0]?.toUpperCase();
+    if (!countryCode) return null;
 
-  const country = getCountryByCode(countryCode);
-  if (!country) return null;
+    const country = getCountryByCode(countryCode);
+    if (!country) return null;
 
-  // Firebase에서 먼저 찾기
-  let trends = await getTrendsFromFirebase(country.code);
+    // slug에서 날짜 추출 (예: "KR-keyword-2025-03-31" → "2025-03-31")
+    const dateMatch = decoded.match(/-(\d{4}-\d{2}-\d{2})$/);
+    const baseDate = dateMatch ? new Date(dateMatch[1]) : new Date();
 
-  // Firebase에 없으면 RSS에서 찾기 (fallback)
-  if (trends.length === 0) {
-    trends = await fetchTrendsForCountry(country.code);
+    // 날짜 기반 범위 검색: 해당 날짜부터 7일 전까지만 조회
+    const allTrends: TrendItem[] = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(baseDate);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split("T")[0];
+
+      try {
+        const trendsRef = collection(db, "trends", country.code, dateStr);
+        const q = query(trendsRef, orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        allTrends.push(...snapshot.docs.map((doc) => doc.data() as TrendItem));
+      } catch {
+        // 해당 날짜 폴더가 없으면 계속 진행
+      }
+    }
+
+    // 정확한 매칭
+    const exact = allTrends.find((t) => t.slug === decoded || t.slug === slug);
+    if (exact) return exact;
+
+    // 날짜 제외 부분 매칭 (slug 날짜가 변경되어도 찾을 수 있도록)
+    const slugWithoutDate = decoded.replace(/-\d{4}-\d{2}-\d{2}$/, "");
+    return allTrends.find((t) => t.slug.replace(/-\d{4}-\d{2}-\d{2}$/, "") === slugWithoutDate) || null;
+  } catch (error) {
+    console.error("Error finding trend:", error);
+    return null;
   }
-
-  // 정확한 매칭
-  const exact = trends.find((t) => t.slug === decoded || t.slug === slug);
-  if (exact) return exact;
-
-  // 날짜 제외 부분 매칭 (slug 날짜가 변경되어도 찾을 수 있도록)
-  const slugWithoutDate = decoded.replace(/-\d{4}-\d{2}-\d{2}$/, "");
-  return trends.find((t) => t.slug.replace(/-\d{4}-\d{2}-\d{2}$/, "") === slugWithoutDate) || null;
 }
 
 

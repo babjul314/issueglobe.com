@@ -1,10 +1,27 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { countries } from "@/data/countries";
 
 export default function LanguageSwitcher() {
   const [isOpen, setIsOpen] = useState(false);
+  const [userCountry, setUserCountry] = useState<string | null>(null);
+  const pathname = usePathname();
+
+  // 현재 페이지의 국가 추출
+  const getCurrentPageCountry = (): string | null => {
+    const match = pathname.match(/^\/country\/([a-z]{2})/i);
+    return match ? match[1].toUpperCase() : null;
+  };
+
+  // IP 기반 국가 감지 (쿠키에서)
+  useEffect(() => {
+    const match = document.cookie.match(/initial-country=([^;]+)/);
+    if (match) {
+      setUserCountry(match[1].toUpperCase());
+    }
+  }, []);
 
   useEffect(() => {
     // Google Translate 초기화
@@ -64,6 +81,15 @@ export default function LanguageSwitcher() {
     zh: { name: "中文", flag: "🇹🇼" },
     ar: { name: "العربية", flag: "🇸🇦" },
   };
+
+  // 현재 페이지 국가와 사용자 IP 국가 확인
+  const currentPageCountry = getCurrentPageCountry();
+  const shouldShowTranslator = !currentPageCountry || !userCountry || currentPageCountry !== userCountry;
+
+  // 같은 국가면 번역 버튼 숨기기
+  if (!shouldShowTranslator) {
+    return null;
+  }
 
   return (
     <>
