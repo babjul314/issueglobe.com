@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { countries } from "@/data/countries";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 export default function Header() {
   const [showRegions, setShowRegions] = useState(false);
@@ -118,6 +119,8 @@ export default function Header() {
               >
                 Regions
               </button>
+              <span className="text-gray-300">|</span>
+              <LanguageSwitcher />
             </nav>
 
             {/* 모바일 메뉴 */}
@@ -128,6 +131,7 @@ export default function Header() {
               >
                 🌍
               </button>
+              <LanguageSwitcher />
             </nav>
 
             {/* Language Selector */}
