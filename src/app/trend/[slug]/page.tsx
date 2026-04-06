@@ -23,11 +23,26 @@ interface PageProps {
 
 async function getTrendsFromFirebase(countryCode: string): Promise<TrendItem[]> {
   try {
-    const today = new Date().toISOString().split("T")[0];
-    const trendsRef = collection(db, "trends", countryCode, today);
-    const q = query(trendsRef, orderBy("createdAt", "desc"));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => doc.data() as TrendItem);
+    // 최근 7일 데이터 검색 (sitemap의 모든 트렌드를 포함하기 위함)
+    const allTrends: TrendItem[] = [];
+    const now = new Date();
+
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(now);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split("T")[0];
+
+      try {
+        const trendsRef = collection(db, "trends", countryCode, dateStr);
+        const q = query(trendsRef, orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        allTrends.push(...snapshot.docs.map((doc) => doc.data() as TrendItem));
+      } catch {
+        // 해당 날짜 폴더가 없으면 계속 진행
+      }
+    }
+
+    return allTrends;
   } catch (error) {
     console.error("Firebase error:", error);
     return [];
