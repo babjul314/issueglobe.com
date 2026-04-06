@@ -119,29 +119,12 @@ async function getUserCountry(): Promise<string> {
 
 async function getTrendsFromFirebase(countryCode: string): Promise<TrendItem[]> {
   try {
-    // 최근 30일 데이터 검색 (성능 최적화)
-    const allTrends: TrendItem[] = [];
-    const now = new Date();
-
-    for (let i = 0; i < 30; i++) {
-      const date = new Date(now);
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toISOString().split("T")[0];
-
-      try {
-        const trendsRef = collection(db, "trends", countryCode, dateStr);
-        const q = query(trendsRef, orderBy("createdAt", "desc"), limit(20));
-        const snapshot = await getDocs(q);
-        allTrends.push(...snapshot.docs.map((doc) => doc.data() as TrendItem));
-
-        // 20개 이상 수집되면 루프 종료
-        if (allTrends.length >= 20) break;
-      } catch {
-        // 해당 날짜 폴더가 없으면 계속 진행
-      }
-    }
-
-    return allTrends.slice(0, 20);
+    // 홈페이지: 오늘 데이터만 (최신 트렌드만 표시)
+    const today = new Date().toISOString().split("T")[0];
+    const trendsRef = collection(db, "trends", countryCode, today);
+    const q = query(trendsRef, orderBy("createdAt", "desc"), limit(20));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc) => doc.data() as TrendItem);
   } catch (error) {
     console.error("Firebase error:", error);
     return [];
