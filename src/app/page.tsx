@@ -152,7 +152,7 @@ export default async function HomePage() {
         id="regions"
         className="relative text-white"
         style={{
-          background: `linear-gradient(135deg, ${country.color}ee, ${country.color}88, #1e1b4b)`,
+          background: `linear-gradient(135deg, ${country.color}ff, ${country.color}dd, #1e1b4b)`,
         }}
       >
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
