@@ -226,7 +226,8 @@ export default async function CountryPage({ params }: PageProps) {
       <section
         className="relative text-white"
         style={{
-          background: `linear-gradient(135deg, ${country.color}ff, ${country.color}dd, #1e1b4b)`,
+          background: `linear-gradient(135deg, ${country.color}, ${country.color}cc, #0f172a)`,
+          minHeight: "140px",
         }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">

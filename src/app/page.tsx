@@ -87,8 +87,8 @@ async function getUserCountry(): Promise<string> {
     if (valid) return cfCountry;
   }
 
-  // 기본값: US
-  return "US";
+  // 기본값: KR (한국)
+  return "KR";
 }
 
 async function getTrendsFromFirebase(countryCode: string): Promise<TrendItem[]> {
@@ -152,7 +152,8 @@ export default async function HomePage() {
         id="regions"
         className="relative text-white"
         style={{
-          background: `linear-gradient(135deg, ${country.color}ff, ${country.color}dd, #1e1b4b)`,
+          background: `linear-gradient(135deg, ${country.color}, ${country.color}cc, #0f172a)`,
+          minHeight: "140px",
         }}
       >
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">

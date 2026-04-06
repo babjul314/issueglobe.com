@@ -190,7 +190,8 @@ export default async function TrendPage({ params }: PageProps) {
       <div
         className="relative"
         style={{
-          background: `linear-gradient(135deg, ${country?.color || "#3B82F6"}ff, ${country?.color || "#3B82F6"}dd, #0f172a)`,
+          background: `linear-gradient(135deg, ${country?.color || "#3B82F6"}, ${country?.color || "#3B82F6"}cc, #0f172a)`,
+          minHeight: "200px",
         }}
       >
         {trend.imageUrl && (
