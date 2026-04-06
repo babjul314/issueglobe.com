@@ -5,7 +5,7 @@ import Image from "next/image";
 import { headers, cookies } from "next/headers";
 import { countries, getCountryByCode } from "@/data/countries";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, doc, getDoc } from "firebase/firestore";
 import { fetchTrendsForCountry, TrendItem } from "@/lib/google-trends";
 import Comments from "@/components/Comments";
 import YouTubeVideos from "@/components/YouTubeVideos";
@@ -65,34 +65,27 @@ async function findTrendBySlug(slug: string): Promise<TrendItem | null> {
     const country = getCountryByCode(countryCode);
     if (!country) return null;
 
-    // slug에서 날짜 추출 (예: "KR-keyword-2025-03-31" → "2025-03-31")
+    // slug에서 날짜 추출 (예: "KR-keyword-2026-04-06" → "2026-04-06")
     const dateMatch = decoded.match(/-(\d{4}-\d{2}-\d{2})$/);
-    const baseDate = dateMatch ? new Date(dateMatch[1]) : new Date();
+    if (!dateMatch) return null;
 
-    // 날짜 기반 범위 검색: 해당 날짜부터 7일 전까지만 조회
-    const allTrends: TrendItem[] = [];
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(baseDate);
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toISOString().split("T")[0];
+    const dateStr = dateMatch[1];
 
-      try {
-        const trendsRef = collection(db, "trends", country.code, dateStr);
-        const q = query(trendsRef, orderBy("createdAt", "desc"));
-        const snapshot = await getDocs(q);
-        allTrends.push(...snapshot.docs.map((doc) => doc.data() as TrendItem));
-      } catch {
-        // 해당 날짜 폴더가 없으면 계속 진행
-      }
+    // Document ID로 직접 조회 (가장 빠른 방법)
+    const docRef = doc(db, "trends", country.code, dateStr, decoded);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return docSnap.data() as TrendItem;
     }
 
-    // 정확한 매칭
-    const exact = allTrends.find((t) => t.slug === decoded || t.slug === slug);
-    if (exact) return exact;
+    // 폴백: 컬렉션 쿼리 (Document 없으면 조회)
+    const trendsRef = collection(db, "trends", country.code, dateStr);
+    const q = query(trendsRef, orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+    const trends = snapshot.docs.map((docSnap) => docSnap.data() as TrendItem);
 
-    // 날짜 제외 부분 매칭 (slug 날짜가 변경되어도 찾을 수 있도록)
-    const slugWithoutDate = decoded.replace(/-\d{4}-\d{2}-\d{2}$/, "");
-    return allTrends.find((t) => t.slug.replace(/-\d{4}-\d{2}-\d{2}$/, "") === slugWithoutDate) || null;
+    const exact = trends.find((t) => t.slug === decoded || t.slug === slug);
+    return exact || null;
   } catch (error) {
     console.error("Error finding trend:", error);
     return null;
