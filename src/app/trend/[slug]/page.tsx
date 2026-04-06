@@ -494,7 +494,7 @@ export default async function TrendPage({ params }: PageProps) {
       {faqs.length > 0 && (
         <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="rounded-2xl bg-white border border-gray-200 p-6 shadow-sm">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">자주 묻는 질문 (FAQ)</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
             <div className="space-y-3">
               {faqs.map((faq, index) => (
                 <details

@@ -7,6 +7,7 @@ import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { TrendItem } from "@/lib/google-trends";
 import TrendCard from "@/components/TrendCard";
 import Link from "next/link";
+import TrendSearch from "@/components/TrendSearch";
 import { clusterTrendsBySemantic, buildSemanticRelations, generateEntitySchema } from "@/lib/semantic-clustering";
 
 export const revalidate = 60; // ISR: 60초마다 재검증
@@ -73,37 +74,37 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (topKeyword) {
     const titleTemplates: Record<string, string> = {
       KR: `현재 한국 1위: ${topKeyword} 실시간 트렌드 | IssueGlobe`,
-      JP: `🔥 日本1位: ${topKeyword} - リアルタイムトレンド | IssueGlobe`,
+      JP: `日本1位: ${topKeyword} - リアルタイムトレンド | IssueGlobe`,
       US: `#1 Trending in USA: ${topKeyword} | IssueGlobe`,
       GB: `#1 Trending in UK: ${topKeyword} | IssueGlobe`,
-      DE: `🔥 #1 in Deutschland: ${topKeyword} | IssueGlobe`,
-      FR: `🔥 N°1 en France: ${topKeyword} | IssueGlobe`,
-      IT: `🔥 #1 in Italia: ${topKeyword} | IssueGlobe`,
-      ES: `🔥 #1 en España: ${topKeyword} | IssueGlobe`,
-      BR: `🔥 #1 no Brasil: ${topKeyword} | IssueGlobe`,
+      DE: `#1 in Deutschland: ${topKeyword} | IssueGlobe`,
+      FR: `N°1 en France: ${topKeyword} | IssueGlobe`,
+      IT: `#1 in Italia: ${topKeyword} | IssueGlobe`,
+      ES: `#1 en España: ${topKeyword} | IssueGlobe`,
+      BR: `#1 no Brasil: ${topKeyword} | IssueGlobe`,
       IN: `#1 Trending in India: ${topKeyword} | IssueGlobe`,
       AU: `#1 Trending in Australia: ${topKeyword} | IssueGlobe`,
       CA: `#1 Trending in Canada: ${topKeyword} | IssueGlobe`,
-      NL: `🔥 #1 in Nederland: ${topKeyword} | IssueGlobe`,
-      CH: `🔥 #1 in der Schweiz: ${topKeyword} | IssueGlobe`,
-      SE: `🔥 #1 in Sverige: ${topKeyword} | IssueGlobe`,
-      MX: `🔥 #1 en México: ${topKeyword} | IssueGlobe`,
-      NO: `🔥 #1 in Norge: ${topKeyword} | IssueGlobe`,
-      DK: `🔥 #1 in Danmark: ${topKeyword} | IssueGlobe`,
-      BE: `🔥 #1 in België: ${topKeyword} | IssueGlobe`,
-      AT: `🔥 #1 in Österreich: ${topKeyword} | IssueGlobe`,
+      NL: `#1 in Nederland: ${topKeyword} | IssueGlobe`,
+      CH: `#1 in der Schweiz: ${topKeyword} | IssueGlobe`,
+      SE: `#1 in Sverige: ${topKeyword} | IssueGlobe`,
+      MX: `#1 en México: ${topKeyword} | IssueGlobe`,
+      NO: `#1 in Norge: ${topKeyword} | IssueGlobe`,
+      DK: `#1 in Danmark: ${topKeyword} | IssueGlobe`,
+      BE: `#1 in België: ${topKeyword} | IssueGlobe`,
+      AT: `#1 in Österreich: ${topKeyword} | IssueGlobe`,
       IE: `#1 Trending in Ireland: ${topKeyword} | IssueGlobe`,
       SG: `#1 Trending in Singapore: ${topKeyword} | IssueGlobe`,
-      IL: `🔥 #1 בישראל: ${topKeyword} | IssueGlobe`,
-      AE: `🔥 #1 في الإمارات: ${topKeyword} | IssueGlobe`,
-      NZ: `#1 Trending in NZ: ${topKeyword} | IssueGlobe`,
-      FI: `🔥 #1 in Suomi: ${topKeyword} | IssueGlobe`,
-      PL: `🔥 #1 w Polsce: ${topKeyword} | IssueGlobe`,
-      TW: `🔥 台灣1位: ${topKeyword} | IssueGlobe`,
-      SA: `🔥 #1 في السعودية: ${topKeyword} | IssueGlobe`,
-      HK: `🔥 香港1位: ${topKeyword} | IssueGlobe`,
+      IL: `#1 בישראל: ${topKeyword} | IssueGlobe`,
+      AE: `#1 في الإمارات: ${topKeyword} | IssueGlobe`,
+      NZ: `#1 Trending in New Zealand: ${topKeyword} | IssueGlobe`,
+      FI: `#1 in Suomi: ${topKeyword} | IssueGlobe`,
+      PL: `#1 w Polsce: ${topKeyword} | IssueGlobe`,
+      TW: `台灣1位: ${topKeyword} | IssueGlobe`,
+      SA: `#1 في السعودية: ${topKeyword} | IssueGlobe`,
+      HK: `香港1位: ${topKeyword} | IssueGlobe`,
     };
-    dynamicTitle = titleTemplates[country.code] || `🔥 #1 Trending in ${country.name}: ${topKeyword} | IssueGlobe`;
+    dynamicTitle = titleTemplates[country.code] || `#1 Trending in ${country.name}: ${topKeyword} | IssueGlobe`;
   }
 
   // 폴백: 동적 제목이 없으면 기존 정적 제목 사용
@@ -237,8 +238,13 @@ export default async function CountryPage({ params }: PageProps) {
         </div>
       </section>
 
+      {/* 검색 */}
+      <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-2">
+        <TrendSearch />
+      </section>
+
       {/* Trends List - 바로 랭킹 */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="grid gap-4">
           {trends.length > 0 ? (
             trends.map((trend, i) => (
@@ -257,7 +263,7 @@ export default async function CountryPage({ params }: PageProps) {
       {trends.length > 3 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">📊 Trending Themes</h2>
+            <h2 className="text-lg font-bold text-gray-900 mb-4">Trending Themes in {country.name}</h2>
             <p className="text-sm text-gray-600 mb-4">
               Topics grouped by semantic relevance to help you discover related trends.
             </p>

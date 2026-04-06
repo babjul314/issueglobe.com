@@ -8,6 +8,7 @@ import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
 import { TrendItem } from "@/lib/google-trends";
 import TrendCard from "@/components/TrendCard";
 import CountrySelector from "@/components/CountrySelector";
+import TrendSearch from "@/components/TrendSearch";
 
 export const revalidate = 30; // 30초 캐시 (매우 빠른 새로고침)
 
@@ -212,8 +213,13 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* 검색 */}
+      <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-2">
+        <TrendSearch />
+      </section>
+
       {/* 트렌드 랭킹 - 바로 보이는 영역 */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-black text-gray-900">
             {ui.trendingIn}

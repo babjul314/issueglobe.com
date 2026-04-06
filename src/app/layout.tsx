@@ -54,57 +54,19 @@ export const metadata: Metadata = {
     },
   },
   keywords: [
-    // 영어 - 기본 키워드
     "trending topics",
     "google trends",
     "trending now",
-    "world trends",
-    "global trends",
     "real-time trends",
-    "trending searches",
-    "viral topics",
-    "what is trending",
-    "trending today",
-
-    // 영어 - 검색 의도별
-    "how to find trending topics",
-    "best trending topics today",
-    "why is this trending",
-    "see what is trending",
     "trending worldwide",
-    "trending by country",
-    "search trends analysis",
-    "popular searches",
-
-    // 영어 - 국가별
-    "trending in US",
-    "trending in Korea",
-    "trending in Japan",
-    "trending in Europe",
-    "trending in UK",
-    "trending in Germany",
-    "trending in France",
-
-    // 한국어
+    "trending searches",
+    "what is trending today",
+    "global trends",
     "실시간 검색어",
-    "트렌드",
-    "트렌드 보기",
-    "실시간 트렌드",
-    "인기 검색어",
-    "검색어 순위",
-
-    // 일본어
-    "検索トレンド",
     "トレンド",
-    "話題のトピック",
-    "リアルタイムトレンド",
-
-    // 다국어
+    "Suchtrends",
     "tendances",
     "tendencias",
-    "Suchtrends",
-    "trending oggi",
-    "assuntos do momento",
     "熱門搜尋",
   ],
   openGraph: {
