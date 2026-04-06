@@ -19,15 +19,15 @@ export default function CountrySelector({ currentCode }: CountrySelectorProps) {
   }
 
   return (
-    <div className="relative">
+    <>
       <button
-        onClick={() => setOpen(!open)}
+        onClick={() => setOpen(true)}
         className="flex items-center gap-2 rounded-full bg-white/50 backdrop-blur-sm px-4 py-2 text-sm font-medium text-white hover:bg-white/60 transition-colors border border-white/60 shadow-lg"
       >
         <span className="text-lg">{current?.flag}</span>
-        <span>{current?.name}</span>
+        <span className="hidden sm:inline">{current?.name}</span>
         <svg
-          className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`}
+          className="w-4 h-4"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -38,39 +38,44 @@ export default function CountrySelector({ currentCode }: CountrySelectorProps) {
 
       {open && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute top-full mt-2 right-0 z-50 w-72 max-h-96 overflow-y-auto rounded-2xl bg-white shadow-2xl border border-gray-200">
-            <div className="p-2">
-              {countries.map((c) => (
+          <div className="fixed inset-0 z-40 bg-black/50" onClick={() => setOpen(false)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              {/* Header */}
+              <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900">Select Region</h2>
                 <button
-                  key={c.code}
-                  onClick={() => selectCountry(c.code)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-sm transition-colors ${
-                    c.code === currentCode
-                      ? "bg-blue-50 text-blue-700 font-medium"
-                      : "text-gray-700 hover:bg-gray-50"
-                  }`}
+                  onClick={() => setOpen(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  <span className="text-xl">{c.flag}</span>
-                  <div>
-                    <p className="font-medium">{c.name}</p>
-                    <p className="text-xs text-gray-400">{c.nameLocal}</p>
-                  </div>
-                  {c.code === currentCode && (
-                    <svg className="w-4 h-4 ml-auto text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  )}
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
-              ))}
+              </div>
+
+              {/* Countries Grid */}
+              <div className="p-3 sm:p-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {countries.map((c) => (
+                  <button
+                    key={c.code}
+                    onClick={() => selectCountry(c.code)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-left hover:bg-blue-50 transition-colors group border border-transparent hover:border-blue-200"
+                  >
+                    <span className="text-3xl sm:text-4xl flex-shrink-0">{c.flag}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 group-hover:text-blue-600 text-sm sm:text-base">
+                        {c.name}
+                      </p>
+                      <p className="text-xs text-gray-400">{c.nameLocal}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </>
       )}
-    </div>
+    </>
   );
 }
