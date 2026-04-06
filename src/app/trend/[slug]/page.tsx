@@ -20,24 +20,32 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-async function getTrendsFromFirebase(countryCode: string): Promise<TrendItem[]> {
+async function getTrendsFromFirebase(countryCode: string, dateStr?: string): Promise<TrendItem[]> {
   try {
-    // 관련 트렌드: 최근 7일 데이터만 검색 (효율적 쿼리)
+    // 특정 날짜의 트렌드만 조회 (dateStr이 제공된 경우)
+    // 트렌드 상세 페이지: 해당 트렌드의 날짜 데이터에서만 관련 트렌드 찾기
     const allTrends: TrendItem[] = [];
-    const now = new Date();
 
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(now);
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toISOString().split("T")[0];
-
+    if (dateStr) {
+      // 특정 날짜만 검색
       try {
         const trendsRef = collection(db, "trends", countryCode, dateStr);
         const q = query(trendsRef, orderBy("createdAt", "desc"));
         const snapshot = await getDocs(q);
         allTrends.push(...snapshot.docs.map((doc) => doc.data() as TrendItem));
       } catch {
-        // 해당 날짜 폴더가 없으면 계속 진행
+        // 해당 날짜 폴더가 없으면 반환
+      }
+    } else {
+      // dateStr 없으면 오늘 데이터만 (홈/국가 페이지용 - 호출 안 함)
+      const today = new Date().toISOString().split("T")[0];
+      try {
+        const trendsRef = collection(db, "trends", countryCode, today);
+        const q = query(trendsRef, orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        allTrends.push(...snapshot.docs.map((doc) => doc.data() as TrendItem));
+      } catch {
+        // 해당 날짜 폴더가 없으면 반환
       }
     }
 
@@ -173,9 +181,9 @@ export default async function TrendPage({ params }: PageProps) {
   const country = getCountryByCode(trend.country);
   const userLang = await getUserLang();
 
-  // Firebase에서 관련 트렌드 가져오기
+  // Firebase에서 해당 트렌드의 날짜 데이터에서 관련 트렌드 가져오기
   let relatedTrends = country
-    ? (await getTrendsFromFirebase(country.code)).filter((t) => t.slug !== slug)
+    ? (await getTrendsFromFirebase(country.code, trend.date)).filter((t) => t.slug !== slug)
     : [];
 
   // Firebase에 없으면 RSS에서 가져오기
