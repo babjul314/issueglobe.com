@@ -166,11 +166,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 async function getTrendsFromFirebase(countryCode: string): Promise<TrendItem[]> {
   try {
-    // 최근 7일 데이터 검색
+    // 최근 90일 데이터 검색
     const allTrends: TrendItem[] = [];
     const now = new Date();
 
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 90; i++) {
       const date = new Date(now);
       date.setDate(date.getDate() - i);
       const dateStr = date.toISOString().split("T")[0];
