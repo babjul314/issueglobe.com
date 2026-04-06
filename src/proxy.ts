@@ -5,25 +5,18 @@ export function proxy(request: NextRequest) {
 
   // 루트 경로(/)일 때만 처리
   if (pathname === "/") {
-    // 쿠키 확인 (사용자가 선택한 국가)
-    const cookie = request.cookies.get("preferred-country")?.value;
-    if (cookie && /^[A-Z]{2}$/.test(cookie)) {
-      console.log(`[IP-Routing] Using cookie: ${cookie}`);
-      return NextResponse.redirect(new URL(`/country/${cookie.toLowerCase()}`, request.url));
-    }
-
-    // IP 기반 국가 감지 (정확도 높음)
+    // IP 기반 국가 감지 (최우선)
     let ipCountry = request.headers.get("x-vercel-ip-country") ||
                     request.headers.get("cf-ipcountry");
 
     if (ipCountry && /^[A-Z]{2}$/.test(ipCountry)) {
-      console.log(`[IP-Routing] Using IP geolocation: ${ipCountry}`);
+      console.log(`[IP-Routing] Detected country by IP: ${ipCountry}`);
       return NextResponse.redirect(new URL(`/country/${ipCountry.toLowerCase()}`, request.url));
     }
 
-    // 로컬 개발: Accept-Language에서 감지
+    // IP 감지 실패 시: Accept-Language에서 감지
     const acceptLanguage = request.headers.get("accept-language") || "";
-    console.log(`[IP-Routing] Accept-Language: ${acceptLanguage}`);
+    console.log(`[IP-Routing] IP not detected. Accept-Language: ${acceptLanguage}`);
 
     const langMap: Record<string, string> = {
       ko: "KR",
