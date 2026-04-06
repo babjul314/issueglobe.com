@@ -7,7 +7,6 @@ import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { TrendItem } from "@/lib/google-trends";
 import TrendCard from "@/components/TrendCard";
 import Link from "next/link";
-import TrendSearch from "@/components/TrendSearch";
 import { clusterTrendsBySemantic, buildSemanticRelations, generateEntitySchema } from "@/lib/semantic-clustering";
 
 export const revalidate = 60; // ISR: 60초마다 재검증
@@ -238,13 +237,8 @@ export default async function CountryPage({ params }: PageProps) {
         </div>
       </section>
 
-      {/* 검색 */}
-      <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-2">
-        <TrendSearch />
-      </section>
-
       {/* Trends List - 바로 랭킹 */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="grid gap-4">
           {trends.length > 0 ? (
             trends.map((trend, i) => (
