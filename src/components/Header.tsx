@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { countries } from "@/data/countries";
-import LanguageSwitcher from "./LanguageSwitcher";
+import AutoTranslator from "./LanguageSwitcher";
 
 export default function Header() {
   const [showRegions, setShowRegions] = useState(false);
@@ -66,8 +66,8 @@ export default function Header() {
                 🌍
               </button>
 
-              {/* 번역 버튼 (LanguageSwitcher - 한 번만 렌더링) */}
-              <LanguageSwitcher />
+              {/* 자동 번역 (UI 없음) */}
+              <AutoTranslator />
             </div>
           </div>
         </div>
@@ -81,7 +81,7 @@ export default function Header() {
             onClick={() => setShowRegions(false)}
           />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" translate="no">
               <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
                 <h2 className="text-lg font-bold text-gray-900">Select Region</h2>
                 <button
