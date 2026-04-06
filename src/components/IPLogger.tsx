@@ -37,7 +37,17 @@ export default function IPLogger() {
           "font-weight: bold; color: #666;",
           "color: #F59E0B; font-size: 12px"
         );
+
+        // 브라우저 언어 설정 출력
+        const browserLang = navigator.language || "Unknown";
+        console.log(
+          `%c🗣️ Browser Language: %c${browserLang}`,
+          "font-weight: bold; color: #666;",
+          "color: #EC4899; font-weight: bold; font-size: 14px"
+        );
+
         console.log("%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", "color: #3B82F6; font-weight: bold; font-size: 14px");
+        console.log("%c💡 Tip: If language doesn't match your country, change browser language settings", "color: #666; font-size: 12px");
       } catch (error) {
         console.error("Failed to fetch IP info:", error);
       }

@@ -140,15 +140,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 async function getUserLang(): Promise<string> {
-  const cookieStore = await cookies();
-  const override = cookieStore.get("preferred-country")?.value;
-  if (override) {
-    const c = countries.find((c) => c.code === override);
-    if (c) return c.lang;
-  }
-
+  // IP 기반 언어 감지 (쿠키 무시)
   const headersList = await headers();
-  const detected = headersList.get("x-vercel-ip-country") || headersList.get("cf-ipcountry") || "US";
+  const detected = headersList.get("x-vercel-ip-country") || headersList.get("cf-ipcountry") || "KR";
   const c = countries.find((c) => c.code === detected);
   return c?.lang || "en";
 }
