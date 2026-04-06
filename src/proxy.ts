@@ -5,20 +5,26 @@ export function proxy(request: NextRequest) {
 
   // 루트 경로(/)일 때만 처리
   if (pathname === "/") {
+    // 쿠키 확인 (사용자가 선택한 국가)
     const cookie = request.cookies.get("preferred-country")?.value;
-    if (cookie) {
+    if (cookie && /^[A-Z]{2}$/.test(cookie)) {
+      console.log(`[IP-Routing] Using cookie: ${cookie}`);
       return NextResponse.redirect(new URL(`/country/${cookie.toLowerCase()}`, request.url));
     }
 
-    // IP 기반 국가 감지
-    const ipCountry = request.headers.get("x-vercel-ip-country") ||
-                      request.headers.get("cf-ipcountry");
-    if (ipCountry) {
+    // IP 기반 국가 감지 (정확도 높음)
+    let ipCountry = request.headers.get("x-vercel-ip-country") ||
+                    request.headers.get("cf-ipcountry");
+
+    if (ipCountry && /^[A-Z]{2}$/.test(ipCountry)) {
+      console.log(`[IP-Routing] Using IP geolocation: ${ipCountry}`);
       return NextResponse.redirect(new URL(`/country/${ipCountry.toLowerCase()}`, request.url));
     }
 
-    // 브라우저 언어 기반 감지
+    // 로컬 개발: Accept-Language에서 감지
     const acceptLanguage = request.headers.get("accept-language") || "";
+    console.log(`[IP-Routing] Accept-Language: ${acceptLanguage}`);
+
     const langMap: Record<string, string> = {
       ko: "KR",
       ja: "JP",
@@ -39,11 +45,13 @@ export function proxy(request: NextRequest) {
 
     const primaryLang = acceptLanguage.split(",")[0]?.split("-")[0]?.toLowerCase();
     if (primaryLang && langMap[primaryLang]) {
+      console.log(`[IP-Routing] Using language: ${primaryLang} -> ${langMap[primaryLang]}`);
       return NextResponse.redirect(new URL(`/country/${langMap[primaryLang].toLowerCase()}`, request.url));
     }
 
-    // 기본값: US
-    return NextResponse.redirect(new URL("/country/us", request.url));
+    // 기본값: KR (한국)
+    console.log(`[IP-Routing] Using default: KR`);
+    return NextResponse.redirect(new URL("/country/kr", request.url));
   }
 
   return NextResponse.next();
