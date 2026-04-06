@@ -1,4 +1,5 @@
 import { headers, cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { countries, getCountryByCode } from "@/data/countries";
@@ -156,6 +157,19 @@ async function getUserLang(): Promise<string> {
 }
 
 export default async function HomePage() {
+  // IP 기반으로 올바른 국가 페이지로 리다이렉트
+  const headersList = await headers();
+  const ipCountry = headersList.get("x-vercel-ip-country") ||
+                    headersList.get("cf-ipcountry");
+
+  if (ipCountry && /^[A-Z]{2}$/.test(ipCountry) && ipCountry !== "US") {
+    // 미국이 아니면 해당 국가 페이지로 리다이렉트
+    const validCountry = countries.find((c) => c.code === ipCountry);
+    if (validCountry) {
+      redirect(`/country/${validCountry.code.toLowerCase()}`);
+    }
+  }
+
   const countryCode = await getUserCountry();
   const country = getCountryByCode(countryCode)!;
   const trends = await getTrendsFromFirebase(country.code);
