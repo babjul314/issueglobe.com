@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { TrendItem } from "@/lib/google-trends";
 import { getCountryByCode } from "@/data/countries";
+import { decodeHtml } from "@/lib/utils";
 
 interface TrendCardProps {
   trend: TrendItem;
@@ -68,13 +69,13 @@ export default function TrendCard({ trend, rank }: TrendCardProps) {
 
           {/* Title */}
           <h3 className="font-black text-gray-900 group-hover:text-blue-600 transition-colors text-xl mb-2 leading-tight break-words">
-            {trend.title}
+            {decodeHtml(trend.title)}
           </h3>
 
           {/* Summary or Description */}
           {(trend.summary || trend.description) && (
             <p className="text-sm text-gray-600 leading-relaxed line-clamp-2 mb-3">
-              {trend.summary || trend.description}
+              {decodeHtml(trend.summary || trend.description)}
             </p>
           )}
 
@@ -83,7 +84,7 @@ export default function TrendCard({ trend, rank }: TrendCardProps) {
             <div className="flex items-start gap-2 bg-amber-50 rounded-lg px-3 py-2 mb-3">
               <span className="text-sm shrink-0">💬</span>
               <p className="text-xs text-amber-800 line-clamp-1">
-                {trend.reactions}
+                {decodeHtml(trend.reactions)}
               </p>
             </div>
           )}
@@ -95,7 +96,7 @@ export default function TrendCard({ trend, rank }: TrendCardProps) {
                 key={q}
                 className="inline-block rounded-full bg-gray-100 px-2.5 py-0.5 text-xs text-gray-600 font-medium max-w-[160px] truncate"
               >
-                {q}
+                {decodeHtml(q)}
               </span>
             ))}
           </div>

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { headers, cookies } from "next/headers";
 import { countries, getCountryByCode } from "@/data/countries";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
 import { TrendItem } from "@/lib/google-trends";
 import TrendCard from "@/components/TrendCard";
 import Link from "next/link";
@@ -20,7 +20,7 @@ function getLocalizedMeta(country: NonNullable<ReturnType<typeof getCountryByCod
   const ui = country.ui;
   const seoMap: Record<string, { title: string; description: string; keywords: string[] }> = {
     US: { title: "Trending Topics in the United States Today", description: "Discover the hottest trending searches in America right now. See real-time Google Trends data updated hourly. Find what Americans are searching for, trending topics, and viral keywords in the USA.", keywords: ["trending US", "what is trending in America", "US trends today", "Google Trends USA"] },
-    KR: { title: "오늘의 실시간 검색어 순위 | 대한민국 트렌드", description: "대한민국에서 지금 가장 많이 검색하는 키워드를 실시간으로 확인하세요. 구글 트렌드 기반 매시간 업데이트.", keywords: ["실시간 검색어", "인기 검색어 순위", "오늘의 트렌드", "구글 트렌드 한국", "실시간 트렌드"] },
+    KR: { title: "실시간 이슈 순위 | 대한민국 트렌드 검색어 - IssueGlobe", description: "지금 한국에서 가장 많이 검색되는 실시간 이슈를 확인하세요. 오늘의 이슈 순위, 지금 뜨는 이슈, 실시간 검색어 1위를 매시간 업데이트합니다. 구글 트렌드 기반 한국 실시간 이슈.", keywords: ["실시간 이슈", "오늘의 이슈", "이슈 순위", "지금 이슈", "실시간 이슈 순위", "한국 실시간 이슈", "실시간 검색어", "인기 검색어 순위", "오늘 이슈", "구글 트렌드 한국"] },
     JP: { title: "今日のトレンド検索ランキング | 日本", description: "日本で今最も検索されているキーワードをリアルタイムで確認。Googleトレンドデータを毎時更新。", keywords: ["トレンド検索", "リアルタイム検索ランキング", "日本のトレンド", "Googleトレンド日本", "今日の検索ワード"] },
     GB: { title: "Trending Searches in the UK Today", description: "See what's trending in the United Kingdom right now. Real-time Google Trends data updated hourly.", keywords: ["UK trends", "trending UK", "what is trending in Britain", "Google Trends UK"] },
     DE: { title: "Aktuelle Trends und Suchanfragen in Deutschland", description: "Entdecken Sie die beliebtesten Suchanfragen in Deutschland in Echtzeit. Stündlich aktualisiert mit Google Trends.", keywords: ["Trends Deutschland", "Suchtrends", "Google Trends Deutschland", "aktuelle Suchanfragen"] },
@@ -72,7 +72,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   let dynamicTitle = "";
   if (topKeyword) {
     const titleTemplates: Record<string, string> = {
-      KR: `현재 한국 1위: ${topKeyword} 실시간 트렌드 | IssueGlobe`,
+      KR: `실시간 이슈 1위: ${topKeyword} | 대한민국 이슈 순위 - IssueGlobe`,
       JP: `日本1位: ${topKeyword} - リアルタイムトレンド | IssueGlobe`,
       US: `#1 Trending in USA: ${topKeyword} | IssueGlobe`,
       GB: `#1 Trending in UK: ${topKeyword} | IssueGlobe`,
@@ -110,31 +110,70 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const seo = getLocalizedMeta(country);
   const finalTitle = dynamicTitle || seo.title;
 
-  // 동적 설명 생성
-  const dynamicDescription = topKeyword
-    ? `Discover why ${topKeyword} is trending #1 in ${country.name}. Real-time trending searches and analysis updated hourly.`
-    : seo.description;
+  // 동적 설명 생성 - 현지 언어 + 실제 실검 키워드 노출로 CTR 향상
+  const t0 = topTrends[0] ?? "";
+  const t1 = topTrends[1] ?? "";
+  const has2 = topTrends.length >= 2;
+  const dynamicDescMap: Record<string, string> = {
+    // 아시아
+    KR: has2 ? `지금 한국 이슈 1위 '${t0}', 2위 '${t1}' 등 TOP10 실시간 공개. 매시간 자동 업데이트 · 구글 트렌드 기반` : seo.description,
+    JP: has2 ? `今のトレンド1位「${t0}」2位「${t1}」など TOP10公開中。毎時自動更新` : seo.description,
+    TW: has2 ? `現在熱搜第1名「${t0}」第2名「${t1}」等 TOP10即時公開。每小時自動更新` : seo.description,
+    HK: has2 ? `現在熱搜第1名「${t0}」第2名「${t1}」等 TOP10即時公開。每小時自動更新` : seo.description,
+    IN: has2 ? `Right now: #1 '${t0}', #2 '${t1}' trending in India. Live TOP 10, updated every hour.` : seo.description,
+    SG: has2 ? `Right now: #1 '${t0}', #2 '${t1}' trending in Singapore. Live TOP 10, updated hourly.` : seo.description,
+    // 영어권
+    US: has2 ? `Trending now: #1 '${t0}', #2 '${t1}' in USA. Live TOP 10 updated every hour.` : seo.description,
+    GB: has2 ? `Trending now: #1 '${t0}', #2 '${t1}' in UK. Live TOP 10, updated hourly.` : seo.description,
+    AU: has2 ? `Trending now: #1 '${t0}', #2 '${t1}' in Australia. Live TOP 10, updated hourly.` : seo.description,
+    CA: has2 ? `Trending now: #1 '${t0}', #2 '${t1}' in Canada. Live TOP 10, updated hourly.` : seo.description,
+    IE: has2 ? `Trending now: #1 '${t0}', #2 '${t1}' in Ireland. Live TOP 10, updated hourly.` : seo.description,
+    NZ: has2 ? `Trending now: #1 '${t0}', #2 '${t1}' in New Zealand. Live TOP 10, updated hourly.` : seo.description,
+    // 독일어권
+    DE: has2 ? `Jetzt: Platz 1 '${t0}', Platz 2 '${t1}' in Deutschland. Live TOP 10, stündlich aktualisiert.` : seo.description,
+    CH: has2 ? `Jetzt: Platz 1 '${t0}', Platz 2 '${t1}' in der Schweiz. Live TOP 10, stündlich aktualisiert.` : seo.description,
+    AT: has2 ? `Jetzt: Platz 1 '${t0}', Platz 2 '${t1}' in Österreich. Live TOP 10, stündlich aktualisiert.` : seo.description,
+    // 프랑스어권
+    FR: has2 ? `En ce moment: N°1 '${t0}', N°2 '${t1}' en France. TOP 10 en direct, mis à jour chaque heure.` : seo.description,
+    BE: has2 ? `En ce moment: N°1 '${t0}', N°2 '${t1}' en Belgique. TOP 10 en direct, mis à jour chaque heure.` : seo.description,
+    // 포르투갈어
+    BR: has2 ? `Agora: 1° '${t0}', 2° '${t1}' no Brasil. TOP 10 ao vivo, atualizado a cada hora.` : seo.description,
+    // 스페인어
+    ES: has2 ? `Ahora: N°1 '${t0}', N°2 '${t1}' en España. TOP 10 en directo, actualizado cada hora.` : seo.description,
+    MX: has2 ? `Ahora: N°1 '${t0}', N°2 '${t1}' en México. TOP 10 en vivo, actualizado cada hora.` : seo.description,
+    // 이탈리아어
+    IT: has2 ? `Adesso: 1° '${t0}', 2° '${t1}' in Italia. TOP 10 in diretta, aggiornato ogni ora.` : seo.description,
+    // 네덜란드어
+    NL: has2 ? `Nu: #1 '${t0}', #2 '${t1}' in Nederland. Live TOP 10, elk uur bijgewerkt.` : seo.description,
+    // 스칸디나비아
+    SE: has2 ? `Nu: #1 '${t0}', #2 '${t1}' i Sverige. Live TOP 10, uppdateras varje timme.` : seo.description,
+    NO: has2 ? `Nå: #1 '${t0}', #2 '${t1}' i Norge. Live TOP 10, oppdateres hver time.` : seo.description,
+    DK: has2 ? `Nu: #1 '${t0}', #2 '${t1}' i Danmark. Live TOP 10, opdateres hver time.` : seo.description,
+    FI: has2 ? `Nyt: #1 '${t0}', #2 '${t1}' Suomessa. Live TOP 10, päivitetään joka tunti.` : seo.description,
+    // 폴란드어
+    PL: has2 ? `Teraz: #1 '${t0}', #2 '${t1}' w Polsce. TOP 10 na żywo, aktualizowane co godzinę.` : seo.description,
+    // 중동
+    SA: has2 ? `الآن: الأول '${t0}'، الثاني '${t1}' في السعودية. أفضل 10 مباشر، يُحدَّث كل ساعة` : seo.description,
+    AE: has2 ? `الآن: الأول '${t0}'، الثاني '${t1}' في الإمارات. أفضل 10 مباشر، يُحدَّث كل ساعة` : seo.description,
+    IL: has2 ? `עכשיו: #1 '${t0}', #2 '${t1}' בישראל. TOP 10 חי, מתעדכן כל שעה` : seo.description,
+  };
+  const finalDescription = dynamicDescMap[country.code] ?? (
+    has2
+      ? `Trending now: #1 '${t0}', #2 '${t1}' in ${country.name}. Live TOP 10, updated hourly.`
+      : seo.description
+  );
 
-  // OG 이미지 URL 생성 (trends 파라미터 포함)
-  const trendsList = topTrends.join(",");
-  const ogImageParams = new URLSearchParams({
-    title: `Trending in ${country.name}`,
-    description: dynamicDescription,
-    country: country.name,
-    ...(trendsList && { trends: trendsList }),
-  });
-
-  const ogImageUrl = `https://issueglobe.com/api/og-image?${ogImageParams.toString()}`;
+  const ogImageUrl = "https://issueglobe.com/opengraph-image";
 
   return {
     title: finalTitle,
-    description: dynamicDescription,
+    description: finalDescription,
     keywords: topKeyword
       ? [topKeyword, ...seo.keywords].slice(0, 10)
       : seo.keywords,
     openGraph: {
       title: finalTitle,
-      description: dynamicDescription,
+      description: finalDescription,
       type: "website",
       locale: country.locale,
       siteName: "IssueGlobe",
@@ -144,7 +183,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
           url: ogImageUrl,
           width: 1200,
           height: 630,
-          alt: `IssueGlobe - #1 Trending: ${topKeyword || country.name}`,
+          alt: `IssueGlobe - ${country.name} 실시간 트렌드`,
           type: "image/png",
         },
       ],
@@ -152,7 +191,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     twitter: {
       card: "summary_large_image",
       title: finalTitle,
-      description: dynamicDescription,
+      description: finalDescription,
       images: [ogImageUrl],
     },
     alternates: {
@@ -169,7 +208,7 @@ async function getTrendsFromFirebase(countryCode: string): Promise<TrendItem[]> 
     // 국가 페이지: 오늘 데이터만 (최신 트렌드만 표시)
     const today = new Date().toISOString().split("T")[0];
     const trendsRef = collection(db, "trends", countryCode, today);
-    const q = query(trendsRef, orderBy("createdAt", "desc"));
+    const q = query(trendsRef, orderBy("createdAt", "desc"), limit(10));
     const snapshot = await getDocs(q);
     return snapshot.docs.map((doc) => doc.data() as TrendItem);
   } catch (error) {
@@ -253,13 +292,29 @@ export default async function CountryPage({ params }: PageProps) {
         </div>
       </section>
 
+      {/* KR 전용: 실시간 이슈 설명 섹션 (SEO용) */}
+      {country.code === "KR" && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="rounded-2xl bg-blue-50 border border-blue-100 p-5">
+            <h2 className="text-base font-bold text-blue-900 mb-2">대한민국 실시간 이슈란?</h2>
+            <p className="text-sm text-blue-800 leading-relaxed">
+              실시간 이슈는 지금 한국에서 가장 많이 검색되는 화제의 키워드입니다. IssueGlobe는 구글 트렌드 데이터를 기반으로 오늘의 이슈 순위를 매시간 자동 업데이트합니다. 지금 뜨는 이슈, 오늘 이슈 1위, 실시간 검색어 순위를 한눈에 확인하세요.
+            </p>
+          </div>
+        </section>
+      )}
+
       {/* Semantic Insights - Topic Clustering */}
       {trends.length > 3 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">Trending Themes in {country.name}</h2>
+            <h2 className="text-lg font-bold text-gray-900 mb-4">
+              {country.code === "KR" ? "오늘의 이슈 주제 분류" : `Trending Themes in ${country.name}`}
+            </h2>
             <p className="text-sm text-gray-600 mb-4">
-              Topics grouped by semantic relevance to help you discover related trends.
+              {country.code === "KR"
+                ? "실시간 이슈를 주제별로 묶어 관련 트렌드를 한눈에 파악하세요."
+                : "Topics grouped by semantic relevance to help you discover related trends."}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {clusterTrendsBySemantic(trends)
@@ -391,6 +446,53 @@ export default async function CountryPage({ params }: PageProps) {
                 name: t.title,
                 url: `https://issueglobe.com/trend/${t.slug}`,
               })),
+            }),
+          }}
+        />
+      )}
+
+      {/* KR 전용 FAQ 스키마 - "실시간 이슈" 검색 노출용 */}
+      {country.code === "KR" && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: [
+                {
+                  "@type": "Question",
+                  name: "실시간 이슈란 무엇인가요?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "실시간 이슈는 지금 이 순간 한국에서 가장 많이 검색되는 화제의 키워드와 뉴스입니다. IssueGlobe는 구글 트렌드 데이터를 분석해 매시간 실시간 이슈 순위를 업데이트합니다.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "오늘의 이슈는 무엇인가요?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: `오늘의 이슈는 ${trends.slice(0, 3).map(t => t.title).join(", ")} 등입니다. 위 목록에서 현재 실시간 이슈 순위 전체를 확인하세요.`,
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "지금 뜨는 이슈는 어디서 확인하나요?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "IssueGlobe(issueglobe.com/country/kr)에서 대한민국 실시간 이슈를 매시간 업데이트로 확인할 수 있습니다. 구글 트렌드 기반으로 자동 수집됩니다.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "한국 실시간 이슈 순위는 어떻게 만들어지나요?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "구글 트렌드(Google Trends) 데이터를 기반으로 시간별 검색량 증가율을 분석하여 실시간 이슈 순위를 산정합니다. 매시간 자동으로 크롤링·업데이트됩니다.",
+                  },
+                },
+              ],
             }),
           }}
         />

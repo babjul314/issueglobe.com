@@ -1,74 +1,55 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// 소셜/검색 크롤러 봇 감지
+function isBot(userAgent: string): boolean {
+  return /kakaotalk|facebookexternalhit|twitterbot|linkedinbot|whatsapp|slackbot|discordbot|telegrambot|googlebot|bingbot|yandex|duckduckbot|applebot|pinterestbot|embedly|outbrain|quora|vkshare|w3c_validator|curl|python-requests|wget|scrapy/i.test(userAgent);
+}
+
 export function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // 루트 경로(/)일 때만 처리
   if (pathname === "/") {
-    const xVercelIp = request.headers.get("x-vercel-ip-country");
-    const cfIp = request.headers.get("cf-ipcountry");
+    const userAgent = request.headers.get("user-agent") || "";
+    if (isBot(userAgent)) {
+      return NextResponse.next();
+    }
 
-    console.log(`[PROXY] 루트(/) 요청 감지`);
-    console.log(`[PROXY] x-vercel-ip-country: ${xVercelIp}`);
-    console.log(`[PROXY] cf-ipcountry: ${cfIp}`);
-
-    // IP 기반 국가 감지 (최우선)
-    let ipCountry = xVercelIp || cfIp;
+    // IP 기반 국가 감지 → 쿠키만 설정 (리다이렉트 없음)
+    const ipCountry =
+      request.headers.get("x-vercel-ip-country") ||
+      request.headers.get("cf-ipcountry");
 
     if (ipCountry && /^[A-Z]{2}$/.test(ipCountry)) {
-      console.log(`[PROXY] IP로 리다이렉트: ${ipCountry} -> /country/${ipCountry.toLowerCase()}`);
-      const response = NextResponse.redirect(new URL(`/country/${ipCountry.toLowerCase()}`, request.url));
-      response.cookies.set("initial-country", ipCountry, {
-        maxAge: 60 * 60 * 24 * 365,
-        path: "/",
-      });
+      const response = NextResponse.next();
+      // initial-country 쿠키가 없을 때만 설정
+      if (!request.cookies.get("initial-country")) {
+        response.cookies.set("initial-country", ipCountry, {
+          maxAge: 60 * 60 * 24 * 365,
+          path: "/",
+        });
+      }
       return response;
     }
 
-    console.log(`[PROXY] IP 유효하지 않음: ${ipCountry}`);
-
-    // IP 감지 실패 시: Accept-Language에서 감지
+    // Accept-Language로 감지
     const acceptLanguage = request.headers.get("accept-language") || "";
-    console.log(`[IP-Routing] IP not detected. Accept-Language: ${acceptLanguage}`);
-
     const langMap: Record<string, string> = {
-      ko: "KR",
-      ja: "JP",
-      de: "DE",
-      fr: "FR",
-      es: "ES",
-      it: "IT",
-      pt: "BR",
-      nl: "NL",
-      sv: "SE",
-      no: "NO",
-      da: "DK",
-      fi: "FI",
-      pl: "PL",
-      zh: "TW",
-      ar: "SA",
+      ko: "KR", ja: "JP", de: "DE", fr: "FR", es: "ES",
+      it: "IT", pt: "BR", nl: "NL", sv: "SE", no: "NO",
+      da: "DK", fi: "FI", pl: "PL", zh: "TW", ar: "SA",
     };
-
     const primaryLang = acceptLanguage.split(",")[0]?.split("-")[0]?.toLowerCase();
     if (primaryLang && langMap[primaryLang]) {
-      console.log(`[IP-Routing] Using language: ${primaryLang} -> ${langMap[primaryLang]}`);
-      const countryCode = langMap[primaryLang];
-      const response = NextResponse.redirect(new URL(`/country/${countryCode.toLowerCase()}`, request.url));
-      response.cookies.set("initial-country", countryCode, {
-        maxAge: 60 * 60 * 24 * 365,
-        path: "/",
-      });
+      const response = NextResponse.next();
+      if (!request.cookies.get("initial-country")) {
+        response.cookies.set("initial-country", langMap[primaryLang], {
+          maxAge: 60 * 60 * 24 * 365,
+          path: "/",
+        });
+      }
       return response;
     }
-
-    // 기본값: KR (한국)
-    console.log(`[IP-Routing] Using default: KR`);
-    const response = NextResponse.redirect(new URL("/country/kr", request.url));
-    response.cookies.set("initial-country", "KR", {
-      maxAge: 60 * 60 * 24 * 365,
-      path: "/",
-    });
-    return response;
   }
 
   return NextResponse.next();

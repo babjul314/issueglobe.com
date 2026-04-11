@@ -30,12 +30,14 @@ function parseTrafficDate(dateStr: string): Date {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://issueglobe.com";
-  const now = new Date();
+  // 오늘 자정 기준 (요청마다 now가 달라지면 Googlebot이 매번 변경으로 인식해 크롤 낭비됨)
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
 
   // 홈페이지
   const home = {
     url: baseUrl,
-    lastModified: now,
+    lastModified: todayStart,
     changeFrequency: "hourly" as const,
     priority: 1,
   };
@@ -43,7 +45,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // 국가별 페이지 (매시간 갱신)
   const countryPages = countries.map((country) => ({
     url: `${baseUrl}/country/${country.code.toLowerCase()}`,
-    lastModified: now,
+    lastModified: todayStart,
     changeFrequency: "hourly" as const,
     priority: 0.9,
   }));
@@ -57,7 +59,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         url: `${baseUrl}/trend/${encodeURIComponent(trend.slug)}`,
         lastModified: trend.date
           ? parseTrafficDate(trend.date)
-          : now,
+          : todayStart,
         changeFrequency: "daily" as const,
         priority: calculatePriorityByTraffic(trend.traffic),
       }));

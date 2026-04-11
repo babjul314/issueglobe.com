@@ -29,9 +29,7 @@ export async function GET() {
       });
     }
 
-    console.log(`Video Sitemap: Generated ${videos.length} video entries`);
-
-    const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
   ${videos.map(video => `

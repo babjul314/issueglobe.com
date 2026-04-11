@@ -1,5 +1,4 @@
 import { headers, cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { countries, getCountryByCode } from "@/data/countries";
@@ -14,7 +13,7 @@ export const revalidate = 30; // 30초 캐시 (매우 빠른 새로고침)
 // Multi-language SEO descriptions for homepage
 const seoDescriptions: Record<string, { title: string; description: string }> = {
   US: { title: "IssueGlobe - Trending Topics in the United States", description: "Discover what Americans are searching for right now. See real-time trending topics and Google Trends data updated every hour. Find the most searched keywords across the USA." },
-  KR: { title: "이슈글로브 - 대한민국 실시간 검색어 순위", description: "한국에서 지금 가장 많이 검색하는 키워드를 실시간으로 확인하세요. 매시간 업데이트되는 구글 트렌드 데이터로 한국 트렌드를 파악하세요. 최신 검색어 순위와 인기 주제를 한눈에 볼 수 있습니다." },
+  KR: { title: "이슈글로브 - 대한민국 실시간 이슈 · 검색어 순위", description: "지금 대한민국 실시간 이슈를 한눈에 확인하세요. 오늘의 이슈 순위, 지금 뜨는 이슈, 실시간 검색어 1위를 매시간 업데이트합니다. 구글 트렌드 기반 한국 실시간 이슈 모음." },
   JP: { title: "イシューグローブ - 日本のトレンド検索ランキング", description: "日本で今最も検索されているキーワードをリアルタイムで確認。Googleトレンドデータを毎時更新。最新の日本トレンドと人気検索ワードをすぐに把握できます。" },
   GB: { title: "IssueGlobe - Trending Topics in the UK", description: "See what the British are searching for right now. Access real-time trending topics and UK Google Trends data updated hourly. Discover the most searched keywords in Britain." },
   DE: { title: "IssueGlobe - Aktuelle Trends in Deutschland", description: "Entdecken Sie, wonach Deutsche suchen. Echtzeit Google Trends, stündlich aktualisiert. Sehen Sie die beliebtesten Suchanfragen und Trends in Deutschland in Echtzeit." },
@@ -35,12 +34,32 @@ export async function generateMetadata(): Promise<Metadata> {
   const seo = seoDescriptions[userCountry] || seoDescriptions.US;
   const country = getCountryByCode(userCountry);
 
+  // 홈페이지도 동적 description - 현재 실검 1~2위 노출
+  const trends = await getTrendsFromFirebase(userCountry);
+  const top = trends.slice(0, 2).map(t => t.title);
+  const dynamicDesc: Record<string, string> = {
+    KR: top.length >= 2
+      ? `지금 한국 이슈 1위 '${top[0]}', 2위 '${top[1]}' 실시간 공개. 30개국 트렌드 · 매시간 자동 업데이트`
+      : seo.description,
+    US: top.length >= 2
+      ? `Trending now: '${top[0]}' & '${top[1]}'. Real-time trends from 30 countries, updated every hour.`
+      : seo.description,
+    JP: top.length >= 2
+      ? `今のトレンド「${top[0]}」「${top[1]}」など30カ国リアルタイム更新`
+      : seo.description,
+  };
+  const finalDesc = dynamicDesc[userCountry] || (
+    top.length >= 2
+      ? `Trending now: '${top[0]}' & '${top[1]}'. Real-time trends from 30 countries, updated every hour.`
+      : seo.description
+  );
+
   return {
     title: seo.title,
-    description: seo.description,
+    description: finalDesc,
     openGraph: {
       title: seo.title,
-      description: seo.description,
+      description: finalDesc,
       locale: country?.locale || "en_US",
       type: "website",
       url: "https://issueglobe.com",
@@ -58,7 +77,7 @@ export async function generateMetadata(): Promise<Metadata> {
     twitter: {
       card: "summary_large_image",
       title: seo.title,
-      description: seo.description,
+      description: finalDesc,
       images: ["https://issueglobe.com/og-image.png"],
     },
   };
@@ -140,34 +159,8 @@ async function getUserLang(): Promise<string> {
 }
 
 export default async function HomePage() {
-  // IP 기반으로 올바른 국가 페이지로 리다이렉트
-  const headersList = await headers();
-  const ipCountry = headersList.get("x-vercel-ip-country") ||
-                    headersList.get("cf-ipcountry");
-  const xVercelIp = headersList.get("x-vercel-ip-country");
-  const cfIp = headersList.get("cf-ipcountry");
-
-  console.log(`[HomePage] 루트(/) 페이지 접속`);
-  console.log(`[HomePage] x-vercel-ip-country: ${xVercelIp}`);
-  console.log(`[HomePage] cf-ipcountry: ${cfIp}`);
-  console.log(`[HomePage] ipCountry 최종값: ${ipCountry}`);
-  console.log(`[HomePage] IP 유효성 검사: ${ipCountry && /^[A-Z]{2}$/.test(ipCountry)}`);
-  console.log(`[HomePage] 미국 아님: ${ipCountry !== "US"}`);
-
-  if (ipCountry && /^[A-Z]{2}$/.test(ipCountry) && ipCountry !== "US") {
-    // 미국이 아니면 해당 국가 페이지로 리다이렉트
-    const validCountry = countries.find((c) => c.code === ipCountry);
-    console.log(`[HomePage] 리다이렉트 실행: IP=${ipCountry}, 대상=/country/${validCountry?.code.toLowerCase()}`);
-    if (validCountry) {
-      redirect(`/country/${validCountry.code.toLowerCase()}`);
-    }
-  }
-
-  console.log(`[HomePage] 리다이렉트 스킵 - 홈페이지 렌더링 중`);
   const countryCode = await getUserCountry();
   const country = getCountryByCode(countryCode)!;
-  console.log(`[HomePage] getUserCountry 반환값: ${countryCode}`);
-  console.log(`[HomePage] 렌더링 국가: ${country.name} (${country.code})`);
 
   const trends = await getTrendsFromFirebase(country.code);
   const ui = country.ui;

@@ -61,7 +61,7 @@ export const countries: Country[] = [
   },
   {
     code: "KR", name: "South Korea", nameLocal: "\uB300\uD55C\uBBFC\uAD6D", flag: "\u{1F1F0}\u{1F1F7}", locale: "ko-KR", lang: "ko", currency: "KRW", region: "Asia", color: "#1D4ED8",
-    ui: { trending: "\uC2E4\uC2DC\uAC04 \uD2B8\uB80C\uB4DC", trendingIn: "\uB300\uD55C\uBBFC\uAD6D \uD2B8\uB80C\uB4DC", searches: "\uAC80\uC0C9", readMore: "\uAE30\uC0AC \uC804\uBB38 \uBCF4\uAE30", relatedSearches: "\uAD00\uB828 \uAC80\uC0C9\uC5B4", moreTrending: "\uB354 \uB9CE\uC740 \uD2B8\uB80C\uB4DC", home: "\uD648", regions: "\uC9C0\uC5ED", live: "\uC2E4\uC2DC\uAC04", hero: "\uB300\uD55C\uBBFC\uAD6D\uC5D0\uC11C \uC9C0\uAE08 \uAC80\uC0C9\uD558\uB294 \uAC83", heroSub: "\uB300\uD55C\uBBFC\uAD6D\uC758 \uC2E4\uC2DC\uAC04 \uD2B8\uB80C\uB4DC, \uB9E4\uC77C \uC5C5\uB370\uC774\uD2B8\uB429\uB2C8\uB2E4.", exploreOther: "\uB2E4\uB978 \uB098\uB77C \uD0D0\uC0C9", noTrends: "\uC544\uC9C1 \uD2B8\uB80C\uB4DC\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4. \uB098\uC911\uC5D0 \uB2E4\uC2DC \uD655\uC778\uD574\uC8FC\uC138\uC694!", source: "\uCD9C\uCC98" },
+    ui: { trending: "실시간 이슈", trendingIn: "대한민국 실시간 이슈 순위", searches: "검색", readMore: "기사 전문 보기", relatedSearches: "관련 검색어", moreTrending: "더 많은 이슈", home: "홈", regions: "지역", live: "실시간", hero: "지금 대한민국 실시간 이슈", heroSub: "오늘의 이슈·실시간 검색어를 매시간 업데이트합니다.", exploreOther: "다른 나라 탐색", noTrends: "아직 이슈가 없습니다. 나중에 다시 확인해주세요!", source: "출처" },
   },
   {
     code: "CA", name: "Canada", nameLocal: "Canada", flag: "\u{1F1E8}\u{1F1E6}", locale: "en-CA", lang: "en", currency: "CAD", region: "North America", color: "#DC2626",

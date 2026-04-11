@@ -5,6 +5,14 @@ export interface RelatedArticle {
   image?: string;
 }
 
+export interface NewsItem {
+  title: string;
+  url: string;
+  source: string;
+  snippet: string;
+  image?: string;
+}
+
 export interface TrendItem {
   title: string;
   slug: string;
@@ -15,9 +23,10 @@ export interface TrendItem {
   imageUrl: string;
   country: string;
   date: string;
-  pubTime: string; // 트렌드 등록 시간 (예: "3시간 전", "14:30")
+  pubTime: string;
   relatedQueries: string[];
-  relatedArticles?: RelatedArticle[]; // 관련 기사들
+  relatedArticles?: RelatedArticle[];
+  newsItems?: NewsItem[]; // RSS에서 가져온 뉴스 (스니펫 포함)
   summary: string;
   detail: string;
   reactions: string;

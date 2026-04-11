@@ -9,7 +9,6 @@ export default function EngagementTracker() {
     trackEngagement();
     improveTimeOnPage();
 
-    console.log('Engagement tracking initialized');
   }, []);
 
   return null; // UI 렌더링 없음

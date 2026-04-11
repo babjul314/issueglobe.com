@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import EngagementTracker from "@/components/EngagementTracker";
 import IPLogger from "@/components/IPLogger";
+import AutoTranslator from "@/components/LanguageSwitcher";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -62,7 +63,14 @@ export const metadata: Metadata = {
     "trending searches",
     "what is trending today",
     "global trends",
+    "실시간 이슈",
+    "오늘의 이슈",
+    "이슈 순위",
+    "지금 이슈",
+    "실시간 이슈 순위",
+    "한국 실시간 이슈",
     "실시간 검색어",
+    "오늘 이슈",
     "トレンド",
     "Suchtrends",
     "tendances",
@@ -78,7 +86,7 @@ export const metadata: Metadata = {
     locale: "en_US",
     images: [
       {
-        url: `https://issueglobe.com/api/og-image?title=${encodeURIComponent("Trending Topics from 30 Countries")}&description=${encodeURIComponent("Real-time insights into global search trends")}&country=${encodeURIComponent("Global")}`,
+        url: "https://issueglobe.com/opengraph-image",
         width: 1200,
         height: 630,
         alt: "IssueGlobe - Real-Time Global Trending Topics",
@@ -90,9 +98,7 @@ export const metadata: Metadata = {
     title: "IssueGlobe - Real-Time Global Trending Topics",
     description:
       "Discover what the world is searching for right now. Real-time trending topics from 30 countries.",
-    images: [
-      `https://issueglobe.com/api/og-image?title=${encodeURIComponent("Trending Topics from 30 Countries")}&description=${encodeURIComponent("Real-time insights into global search trends")}&country=${encodeURIComponent("Global")}`,
-    ],
+    images: ["https://issueglobe.com/opengraph-image"],
   },
   robots: {
     index: true,
@@ -115,7 +121,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="canonical" href="https://issueglobe.com" />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="prefetch" href="/icon.svg" />
@@ -212,6 +217,7 @@ export default function RootLayout({
       >
         <EngagementTracker />
         <IPLogger />
+        <AutoTranslator />
         <Header />
         <main className="min-h-screen">{children}</main>
         <Footer />

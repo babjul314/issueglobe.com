@@ -13,6 +13,8 @@ import RelatedArticles from "@/components/RelatedArticles";
 import { getRelatedTrendsForLinking } from "@/lib/internal-linking";
 import { generateEnhancedMetaTags, generateOptimizedAltText } from "@/lib/dynamic-meta-optimization";
 import { injectFAQToPage } from "@/lib/faq-schema-generator";
+import { decodeHtml } from "@/lib/utils";
+import { NewsItem } from "@/lib/google-trends";
 
 export const revalidate = 300; // 5분 캐시 (트렌드는 덜 자주 변경됨)
 
@@ -96,7 +98,7 @@ async function findTrendBySlug(slug: string): Promise<TrendItem | null> {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const trend = await findTrendBySlug(slug);
-  if (!trend) return {};
+  if (!trend) return { robots: { index: false, follow: false } };
 
   const country = getCountryByCode(trend.country);
 
@@ -169,7 +171,41 @@ export default async function TrendPage({ params }: PageProps) {
   const { slug } = await params;
   const trend = await findTrendBySlug(slug);
 
-  if (!trend) notFound();
+  if (!trend) {
+    // 트렌드 데이터 없음 → 404 대신 만료 안내 페이지
+    const slugCountryCode = (await params).slug.split("-")[0]?.toUpperCase();
+    const slugCountry = slugCountryCode ? countries.find(c => c.code === slugCountryCode) : null;
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="max-w-md w-full text-center">
+          <div className="text-6xl mb-6">📰</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-3">
+            이 이슈는 더 이상 제공되지 않습니다
+          </h1>
+          <p className="text-gray-500 mb-8 leading-relaxed">
+            오래된 실시간 검색어는 일정 기간 후 만료됩니다.<br />
+            현재 실시간 검색어를 확인해보세요.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            {slugCountry && (
+              <Link
+                href={`/country/${slugCountry.code.toLowerCase()}`}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
+              >
+                {slugCountry.flag} {slugCountry.name} 실시간 검색어 보기
+              </Link>
+            )}
+            <Link
+              href="/"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-300 px-6 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              🌍 전체 트렌드 보기
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const country = getCountryByCode(trend.country);
   const userLang = await getUserLang();
@@ -255,7 +291,7 @@ export default async function TrendPage({ params }: PageProps) {
 
           {/* Title */}
           <h1 className="text-3xl md:text-5xl font-black text-white leading-tight mb-4">
-            {trend.title}
+            {decodeHtml(trend.title)}
           </h1>
         </div>
       </div>
@@ -271,19 +307,55 @@ export default async function TrendPage({ params }: PageProps) {
             {(trend.summary || trend.detail) && (
               <article className="rounded-2xl bg-gradient-to-br from-blue-50 to-blue-50/50 border border-blue-200 p-6 shadow-sm">
                 <h2 className="text-lg font-bold text-gray-900 mb-3">
-                  What is <strong>{trend.title}</strong>?
+                  <strong>{decodeHtml(trend.title)}</strong> — 지금 무슨 일이?
                 </h2>
                 {trend.summary && (
                   <p className="text-base text-gray-700 leading-relaxed mb-4">
-                    {trend.summary}
+                    {decodeHtml(trend.summary)}
                   </p>
                 )}
                 {trend.detail && (
                   <div className="text-sm text-gray-600 leading-relaxed space-y-3">
-                    <p>{trend.detail}</p>
+                    <p>{decodeHtml(trend.detail)}</p>
                   </div>
                 )}
               </article>
+            )}
+
+            {/* 뉴스 아이템 카드 (RSS 스니펫) */}
+            {trend.newsItems && trend.newsItems.length > 0 && (
+              <section className="space-y-3">
+                <h2 className="text-lg font-bold text-gray-900">관련 뉴스</h2>
+                {(trend.newsItems as NewsItem[]).map((item, i) => (
+                  <a
+                    key={i}
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex gap-4 rounded-2xl bg-white border border-gray-200 p-4 shadow-sm hover:shadow-md hover:border-blue-300 transition-all group"
+                  >
+                    {item.image && (
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="w-20 h-16 object-cover rounded-lg shrink-0 bg-gray-100"
+                        loading="lazy"
+                      />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2 mb-1">
+                        {decodeHtml(item.title)}
+                      </p>
+                      {item.snippet && (
+                        <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed mb-2">
+                          {decodeHtml(item.snippet)}
+                        </p>
+                      )}
+                      <span className="text-xs text-gray-400 font-medium">{item.source}</span>
+                    </div>
+                  </a>
+                ))}
+              </section>
             )}
 
             {/* YouTube Videos */}
@@ -341,7 +413,7 @@ export default async function TrendPage({ params }: PageProps) {
                       key={q}
                       className="inline-block rounded-full bg-gray-100 border border-gray-200 px-3 py-1.5 text-sm text-gray-700 font-medium"
                     >
-                      {q}
+                      {decodeHtml(q)}
                     </span>
                   ))}
                 </div>

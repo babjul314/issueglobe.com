@@ -1,26 +1,50 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import { countries, getCountryByCode } from "@/data/countries";
 
 export default function Header() {
+  const pathname = usePathname();
   const [showRegions, setShowRegions] = useState(false);
   const [ui, setUi] = useState({
     home: "Home",
     regions: "Regions",
     selectRegion: "Select Region",
   });
+  const [userCountryCode, setUserCountryCode] = useState<string>("");
+  const [localizedNames, setLocalizedNames] = useState<Record<string, string>>({});
+
+  // 현재 선택된(보고 있는) 나라 코드
+  const currentPageCountry = (() => {
+    const m = pathname.match(/^\/country\/([a-z]{2,3})/i);
+    return m?.[1]?.toUpperCase() || "";
+  })();
 
   useEffect(() => {
     const match = document.cookie.match(/initial-country=([^;]+)/);
     const code = match?.[1]?.toUpperCase();
     const country = code ? getCountryByCode(code) : null;
+
     if (country) {
+      setUserCountryCode(country.code);
       setUi({
         home: country.ui.home,
         regions: country.ui.regions,
         selectRegion: country.ui.regions,
       });
+
+      // Intl.DisplayNames으로 사용자 언어에 맞는 나라명 생성
+      try {
+        const dn = new Intl.DisplayNames([country.lang], { type: "region" });
+        const names: Record<string, string> = {};
+        countries.forEach((c) => {
+          names[c.code] = dn.of(c.code) || c.name;
+        });
+        setLocalizedNames(names);
+      } catch {
+        // 미지원 브라우저 fallback
+      }
     }
   }, []);
 
@@ -30,14 +54,20 @@ export default function Header() {
     window.location.href = initialCountry ? `/country/${initialCountry.toLowerCase()}` : "/";
   }
 
-  function selectCountry(code: string) {
+  const selectCountry = useCallback((code: string) => {
     if (!document.cookie.includes("initial-country=")) {
       document.cookie = `initial-country=${code};path=/;max-age=${60 * 60 * 24 * 365}`;
     }
     document.cookie = `preferred-country=${code};path=/;max-age=${60 * 60 * 24 * 365}`;
     setShowRegions(false);
     window.location.href = `/country/${code.toLowerCase()}`;
-  }
+  }, []);
+
+  const sortedCountries = [...countries].sort((a, b) => {
+    if (a.code === userCountryCode) return -1;
+    if (b.code === userCountryCode) return 1;
+    return 0;
+  });
 
   return (
     <>
@@ -101,19 +131,35 @@ export default function Header() {
                 </button>
               </div>
               <div className="p-3 sm:p-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {countries.map((c) => (
-                  <button
-                    key={c.code}
-                    onClick={() => selectCountry(c.code)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-left hover:bg-blue-50 transition-colors group border border-transparent hover:border-blue-200"
-                  >
-                    <span className="text-3xl shrink-0">{c.flag}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-900 group-hover:text-blue-600 text-sm">{c.name}</p>
-                      <p className="text-xs text-gray-400">{c.nameLocal}</p>
-                    </div>
-                  </button>
-                ))}
+                {sortedCountries.map((c) => {
+                  const isSelected = c.code === currentPageCountry;
+                  const isHome = c.code === userCountryCode;
+                  const displayName = localizedNames[c.code] || c.nameLocal;
+                  return (
+                    <button
+                      key={c.code}
+                      onClick={() => selectCountry(c.code)}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors group border ${
+                        isSelected
+                          ? "bg-blue-50 border-blue-300"
+                          : "hover:bg-blue-50 border-transparent hover:border-blue-200"
+                      }`}
+                    >
+                      <span className="text-3xl shrink-0">{c.flag}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className={`font-semibold text-sm ${isSelected ? "text-blue-600" : "text-gray-900 group-hover:text-blue-600"}`}>
+                          {displayName}
+                        </p>
+                        {!isHome && (
+                          <p className="text-xs text-gray-400">{c.nameLocal}</p>
+                        )}
+                      </div>
+                      {isSelected && (
+                        <span className="text-blue-600 shrink-0 text-base">✓</span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
