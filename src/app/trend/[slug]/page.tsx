@@ -7,6 +7,7 @@ import { countries, getCountryByCode } from "@/data/countries";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, orderBy, doc, getDoc } from "firebase/firestore";
 import { fetchTrendsForCountry, TrendItem } from "@/lib/google-trends";
+import { findLiveTrendBySlug, getTodayDate, getTrendsFromSources } from "@/lib/trend-source";
 import Comments from "@/components/Comments";
 import YouTubeVideos from "@/components/YouTubeVideos";
 import RelatedArticles from "@/components/RelatedArticles";
@@ -23,39 +24,7 @@ interface PageProps {
 }
 
 async function getTrendsFromFirebase(countryCode: string, dateStr?: string): Promise<TrendItem[]> {
-  try {
-    // 특정 날짜의 트렌드만 조회 (dateStr이 제공된 경우)
-    // 트렌드 상세 페이지: 해당 트렌드의 날짜 데이터에서만 관련 트렌드 찾기
-    const allTrends: TrendItem[] = [];
-
-    if (dateStr) {
-      // 특정 날짜만 검색
-      try {
-        const trendsRef = collection(db, "trends", countryCode, dateStr);
-        const q = query(trendsRef, orderBy("createdAt", "desc"));
-        const snapshot = await getDocs(q);
-        allTrends.push(...snapshot.docs.map((doc) => doc.data() as TrendItem));
-      } catch {
-        // 해당 날짜 폴더가 없으면 반환
-      }
-    } else {
-      // dateStr 없으면 오늘 데이터만 (홈/국가 페이지용 - 호출 안 함)
-      const today = new Date().toISOString().split("T")[0];
-      try {
-        const trendsRef = collection(db, "trends", countryCode, today);
-        const q = query(trendsRef, orderBy("createdAt", "desc"));
-        const snapshot = await getDocs(q);
-        allTrends.push(...snapshot.docs.map((doc) => doc.data() as TrendItem));
-      } catch {
-        // 해당 날짜 폴더가 없으면 반환
-      }
-    }
-
-    return allTrends;
-  } catch (error) {
-    console.error("Firebase error:", error);
-    return [];
-  }
+  return getTrendsFromSources(countryCode, 100, dateStr);
 }
 
 async function findTrendBySlug(slug: string): Promise<TrendItem | null> {
@@ -87,7 +56,13 @@ async function findTrendBySlug(slug: string): Promise<TrendItem | null> {
     const trends = snapshot.docs.map((docSnap) => docSnap.data() as TrendItem);
 
     const exact = trends.find((t) => t.slug === decoded || t.slug === slug);
-    return exact || null;
+    if (exact) return exact;
+
+    if (dateStr === getTodayDate()) {
+      return findLiveTrendBySlug(country.code, decoded);
+    }
+
+    return null;
   } catch (error) {
     console.error("Error finding trend:", error);
     return null;

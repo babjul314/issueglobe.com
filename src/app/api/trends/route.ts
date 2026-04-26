@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase";
-import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
-import { countries, getCountryByCode } from "@/data/countries";
+import { getCountryByCode } from "@/data/countries";
+import { getTrendsFromSources } from "@/lib/trend-source";
 
 export const revalidate = 300; // 5분 캐시
 
@@ -30,11 +29,8 @@ export async function GET(request: NextRequest) {
     await Promise.all(
       topCountries.map(async (code) => {
         try {
-          const trendsRef = collection(db, "trends", code, today);
-          const q = query(trendsRef, orderBy("createdAt", "desc"), limit(20));
-          const snapshot = await getDocs(q);
-          snapshot.docs.forEach((doc) => {
-            const data = doc.data();
+          const trends = await getTrendsFromSources(code, 20, today);
+          trends.forEach((data) => {
             if (
               data.title?.toLowerCase().includes(lowerQuery) ||
               data.relatedQueries?.some((q: string) => q.toLowerCase().includes(lowerQuery))
@@ -78,10 +74,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const trendsRef = collection(db, "trends", countryParam, today);
-    const q = query(trendsRef, orderBy("createdAt", "desc"), limit(limitParam));
-    const snapshot = await getDocs(q);
-    const trends = snapshot.docs.map((doc) => doc.data());
+    const trends = await getTrendsFromSources(countryParam, limitParam, today);
 
     return NextResponse.json(
       { country: countryData, trends },

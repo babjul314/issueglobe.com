@@ -2,9 +2,8 @@ import { headers, cookies } from "next/headers";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { countries, getCountryByCode } from "@/data/countries";
-import { db } from "@/lib/firebase";
-import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
 import { TrendItem } from "@/lib/google-trends";
+import { getTrendsFromSources } from "@/lib/trend-source";
 import TrendCard from "@/components/TrendCard";
 import CountrySelector from "@/components/CountrySelector";
 
@@ -137,17 +136,7 @@ async function getUserCountry(): Promise<string> {
 }
 
 async function getTrendsFromFirebase(countryCode: string): Promise<TrendItem[]> {
-  try {
-    // 홈페이지: 오늘 데이터만 (최신 트렌드만 표시)
-    const today = new Date().toISOString().split("T")[0];
-    const trendsRef = collection(db, "trends", countryCode, today);
-    const q = query(trendsRef, orderBy("createdAt", "desc"), limit(20));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => doc.data() as TrendItem);
-  } catch (error) {
-    console.error("Firebase error:", error);
-    return [];
-  }
+  return getTrendsFromSources(countryCode, 20);
 }
 
 async function getUserLang(): Promise<string> {

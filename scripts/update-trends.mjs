@@ -11,12 +11,11 @@ import fs from "fs";
 import path from "path";
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-if (!ANTHROPIC_API_KEY) {
-  console.error("ANTHROPIC_API_KEY is not set");
-  process.exit(1);
-}
+const client = ANTHROPIC_API_KEY ? new Anthropic({ apiKey: ANTHROPIC_API_KEY }) : null;
 
-const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
+if (!client) {
+  console.warn("ANTHROPIC_API_KEY is not set; continuing with RSS-only trend collection.");
+}
 
 const COUNTRIES = [
   { code: "US", name: "United States", lang: "en" },
@@ -83,6 +82,42 @@ function slugify(text) {
     .slice(0, 80);
 }
 
+function formatPubTime(pubDate) {
+  if (!pubDate) return "";
+  const pub = new Date(pubDate);
+  if (Number.isNaN(pub.getTime())) return "";
+
+  const diffMin = Math.max(0, Math.floor((Date.now() - pub.getTime()) / 60000));
+  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffMin < 1440) return `${Math.floor(diffMin / 60)}h ago`;
+  return `${Math.floor(diffMin / 1440)}d ago`;
+}
+
+function generateFallbackContent(countryName, trends) {
+  return trends.map((trend) => {
+    const source = trend.newsSource ? ` Source: ${trend.newsSource}.` : "";
+    const headline = trend.newsTitle || `${trend.title} is trending in ${countryName}.`;
+
+    return {
+      title: trend.title,
+      summary: headline,
+      detail: [
+        headline,
+        `${trend.title} is seeing increased search interest in ${countryName}.`,
+        source.trim() || "Search interest is moving quickly as people look for current updates.",
+        "IssueGlobe is tracking this topic through Google Trends RSS data.",
+        "Check back as the ranking can change throughout the day.",
+      ].join("\n"),
+      reactions: "People are searching for updates, background, and related coverage as this topic gains momentum.",
+      relatedQueries: [
+        trend.title,
+        `${trend.title} news`,
+        `${trend.title} ${countryName}`,
+      ],
+    };
+  });
+}
+
 // 해당 나라 언론사인지 확인 (다른 나라 출처 제거)
 const COUNTRY_DOMAINS = {
   US: [".com", ".org", ".us"], GB: [".co.uk", ".uk", ".bbc."], KR: [".kr", ".daum.", ".naver.", ".chosun.", ".joins.", ".donga.", ".mk.", ".newsis.", ".ytn."],
@@ -123,8 +158,9 @@ async function fetchRSS(countryCode) {
       const newsTitle = extractTag(itemXml, "ht:news_item_title") || "";
       const newsSource = extractTag(itemXml, "ht:news_item_source") || "";
       const pictureUrl = extractTag(itemXml, "ht:picture") || "";
+      const pubDate = extractTag(itemXml, "pubDate") || "";
       if (title && isSourceFromCountry(newsUrl, countryCode)) {
-        items.push({ title, traffic, newsUrl, newsTitle, newsSource, pictureUrl });
+        items.push({ title, traffic, newsUrl, newsTitle, newsSource, pictureUrl, pubDate });
       }
     }
     return items.slice(0, 5); // 상위 5개만
@@ -159,6 +195,7 @@ async function fetchArticleText(url) {
 
 async function generateContent(countryCode, countryName, lang, trends) {
   if (trends.length === 0) return [];
+  if (!client) return generateFallbackContent(countryName, trends);
 
   // 각 트렌드의 기사 내용 가져오기
   console.log(`    Fetching ${trends.length} articles for ${countryCode}...`);
@@ -250,6 +287,7 @@ async function main() {
             imageUrl: rss.pictureUrl,
             country: c.code,
             date: today,
+            pubTime: formatPubTime(rss.pubDate),
             relatedQueries: ai.relatedQueries || [],
             summary: ai.summary || "",
             detail: ai.detail || "",
