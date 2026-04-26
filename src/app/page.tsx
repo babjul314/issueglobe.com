@@ -2,9 +2,8 @@ import { headers, cookies } from "next/headers";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { countries, getCountryByCode } from "@/data/countries";
-import { db } from "@/lib/firebase";
-import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
 import { TrendItem } from "@/lib/google-trends";
+import { getTrendsFromSources } from "@/lib/trend-source";
 import TrendCard from "@/components/TrendCard";
 import CountrySelector from "@/components/CountrySelector";
 
@@ -34,31 +33,38 @@ export async function generateMetadata(): Promise<Metadata> {
   const seo = seoDescriptions[userCountry] || seoDescriptions.US;
   const country = getCountryByCode(userCountry);
 
-  // 홈페이지도 동적 description - 현재 실검 1~2위 노출
+  // 홈페이지도 동적 description - 현재 실검 1~2위 + 검색량 노출
   const trends = await getTrendsFromFirebase(userCountry);
-  const top = trends.slice(0, 2).map(t => t.title);
+  const top = trends.slice(0, 2);
+  const topTitles = top.map(t => t.title);
+  const topTraffic = top[0]?.traffic ? ` ${top[0].traffic} 검색.` : "";
   const dynamicDesc: Record<string, string> = {
-    KR: top.length >= 2
-      ? `지금 한국 이슈 1위 '${top[0]}', 2위 '${top[1]}' 실시간 공개. 30개국 트렌드 · 매시간 자동 업데이트`
+    KR: topTitles.length >= 2
+      ? `실검 1위 '${topTitles[0]}'.${topTraffic} 2위 '${topTitles[1]}' 급상승. 30개국 이슈 매시간 업데이트`
       : seo.description,
-    US: top.length >= 2
-      ? `Trending now: '${top[0]}' & '${top[1]}'. Real-time trends from 30 countries, updated every hour.`
+    US: topTitles.length >= 2
+      ? `Trending now: '${topTitles[0]}' & '${topTitles[1]}'. Live trends from 30 countries, updated every hour.`
       : seo.description,
-    JP: top.length >= 2
-      ? `今のトレンド「${top[0]}」「${top[1]}」など30カ国リアルタイム更新`
+    JP: topTitles.length >= 2
+      ? `今のトレンド「${topTitles[0]}」「${topTitles[1]}」など30カ国リアルタイム更新`
       : seo.description,
   };
   const finalDesc = dynamicDesc[userCountry] || (
-    top.length >= 2
-      ? `Trending now: '${top[0]}' & '${top[1]}'. Real-time trends from 30 countries, updated every hour.`
+    topTitles.length >= 2
+      ? `Trending now: '${topTitles[0]}' & '${topTitles[1]}'. Live trends from 30 countries, updated every hour.`
       : seo.description
   );
 
+  // 홈 타이틀도 실검 1위 키워드 포함 (KR만)
+  const dynamicTitle = userCountry === "KR" && topTitles[0]
+    ? `'${topTitles[0].length > 15 ? topTitles[0].substring(0, 13) + "…" : topTitles[0]}' 실검 1위 | 한국 실시간 이슈`
+    : seo.title;
+
   return {
-    title: seo.title,
+    title: dynamicTitle,
     description: finalDesc,
     openGraph: {
-      title: seo.title,
+      title: dynamicTitle,
       description: finalDesc,
       locale: country?.locale || "en_US",
       type: "website",
@@ -137,17 +143,7 @@ async function getUserCountry(): Promise<string> {
 }
 
 async function getTrendsFromFirebase(countryCode: string): Promise<TrendItem[]> {
-  try {
-    // 홈페이지: 오늘 데이터만 (최신 트렌드만 표시)
-    const today = new Date().toISOString().split("T")[0];
-    const trendsRef = collection(db, "trends", countryCode, today);
-    const q = query(trendsRef, orderBy("createdAt", "desc"), limit(20));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => doc.data() as TrendItem);
-  } catch (error) {
-    console.error("Firebase error:", error);
-    return [];
-  }
+  return getTrendsFromSources(countryCode, 20);
 }
 
 async function getUserLang(): Promise<string> {

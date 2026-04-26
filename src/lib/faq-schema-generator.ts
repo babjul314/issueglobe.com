@@ -23,25 +23,24 @@ export interface FAQSchema {
 }
 
 /**
- * relatedQueries를 질문 형식으로 변환
+ * relatedQueries를 질문 형식으로 변환 (한국어/영어 분리)
  */
-function normalizeQuestion(query: string): string {
-  // 이미 질문형인지 확인
+function normalizeQuestion(query: string, isKorean = false): string {
+  if (isKorean) {
+    if (query.endsWith("?") || query.endsWith("？")) return query;
+    // 한국어 질문 변환
+    if (/[가-힣]/.test(query)) {
+      if (/^(왜|뭐|어떻게|언제|어디|누가|무엇|어느|어떤)/.test(query)) return query + "?";
+      return `${query}이(가) 왜 이슈인가요?`;
+    }
+    return `${query}이란 무엇인가요?`;
+  }
+
   const questionWords = ["what", "why", "how", "when", "where", "who", "is", "are", "can", "could", "should", "would"];
   const lowerQuery = query.toLowerCase().trim();
-
-  // 물음표 끝나는지 확인
-  if (lowerQuery.endsWith("?")) {
-    return query;
-  }
-
-  // 질문 단어로 시작하는지 확인
+  if (lowerQuery.endsWith("?")) return query;
   const firstWord = lowerQuery.split(/\s+/)[0];
-  if (questionWords.includes(firstWord)) {
-    return query + "?";
-  }
-
-  // 아니면 "What is..." 형식으로 변환
+  if (questionWords.includes(firstWord)) return query + "?";
   return `What is ${query}?`;
 }
 
@@ -95,13 +94,16 @@ export function generateFAQItems(trend: {
   country?: string;
 }): FAQItem[] {
   const faqs: FAQItem[] = [];
+  const isKorean = trend.country === "KR";
 
   if (!trend.relatedQueries || trend.relatedQueries.length === 0) {
-    // relatedQueries가 없으면 기본 FAQ 1개 생성
-    faqs.push({
-      question: `What is ${trend.title}?`,
-      answer: generateAnswer(trend, 0, 1),
-    });
+    // relatedQueries가 없으면 기본 FAQ 생성 (한국어/영어)
+    if (isKorean) {
+      faqs.push({ question: `${trend.title}이(가) 왜 이슈인가요?`, answer: generateAnswer(trend, 0, 1) });
+      faqs.push({ question: `${trend.title} 관련 최신 소식은?`, answer: generateAnswer(trend, 1, 2) });
+    } else {
+      faqs.push({ question: `What is ${trend.title}?`, answer: generateAnswer(trend, 0, 1) });
+    }
     return faqs;
   }
 
@@ -109,14 +111,15 @@ export function generateFAQItems(trend: {
   const queries = trend.relatedQueries.slice(0, 5);
 
   queries.forEach((query, index) => {
-    const question = normalizeQuestion(query);
+    const question = normalizeQuestion(query, isKorean);
     const answer = generateAnswer(trend, index, queries.length);
-
-    faqs.push({
-      question,
-      answer,
-    });
+    faqs.push({ question, answer });
   });
+
+  // 한국어는 추가 기본 FAQ 삽입
+  if (isKorean && faqs.length < 3) {
+    faqs.push({ question: `${trend.title} 관련 뉴스는 어디서 보나요?`, answer: `IssueGlobe에서 ${trend.title} 관련 실시간 기사와 유튜브 영상을 확인할 수 있습니다.` });
+  }
 
   return faqs;
 }

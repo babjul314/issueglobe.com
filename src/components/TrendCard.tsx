@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { TrendItem } from "@/lib/google-trends";
 import { getCountryByCode } from "@/data/countries";
 import { decodeHtml } from "@/lib/utils";
@@ -18,30 +17,14 @@ export default function TrendCard({ trend, rank }: TrendCardProps) {
       className="group block rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm transition-all hover:shadow-xl hover:border-gray-300 hover:-translate-y-0.5"
     >
       <div className="flex flex-col sm:flex-row">
-        {/* Left: Rank + Image */}
-        <div className="relative sm:w-48 shrink-0">
-          {trend.imageUrl ? (
-            <div className="relative h-40 sm:h-full min-h-[160px] w-full overflow-hidden">
-              <Image
-                src={trend.imageUrl}
-                alt={`${trend.title} - Trending in ${country?.name}`}
-                title={`${trend.title} trending topic image`}
-                fill
-                sizes="(max-width: 640px) 100vw, (max-width: 768px) 192px, 192px"
-                className="object-cover"
-                loading="lazy"
-                quality={75}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-            </div>
-          ) : (
-            <div
-              className="h-40 sm:h-full min-h-[160px] w-full flex items-center justify-center"
-              style={{ backgroundColor: `${country?.color}15` }}
-            >
-              <span className="text-5xl opacity-30">{country?.flag}</span>
-            </div>
-          )}
+        {/* Left: Rank only. Remote RSS images are intentionally not shown in ranking lists. */}
+        <div
+          className="relative sm:w-28 shrink-0 min-h-[96px] sm:min-h-[160px] flex items-center justify-center"
+          style={{ backgroundColor: `${country?.color || "#3B82F6"}12` }}
+        >
+          <span className="text-4xl opacity-20" aria-hidden="true">
+            {country?.flag}
+          </span>
           <div
             className="absolute top-3 left-3 w-10 h-10 rounded-full flex items-center justify-center text-lg font-black text-white shadow-lg border-2 border-white"
             style={{ backgroundColor: country?.color || "#3B82F6" }}

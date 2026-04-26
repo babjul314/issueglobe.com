@@ -38,8 +38,13 @@ export const metadata: Metadata = {
   description:
     "Discover what the world is searching for right now. IssueGlobe brings you real-time trending topics from 30 countries including US, UK, Korea, Japan, Germany, France and more. Updated hourly with live Google Trends data.",
   icons: {
-    icon: "/icon.svg",
-    apple: "/logo.svg",
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
   },
   formatDetection: {
     telephone: false,

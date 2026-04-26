@@ -19,52 +19,69 @@ interface EnhancedMetaTags {
 
 /**
  * 트렌드의 컨텍스트에 따라 최적화된 메타 타이틀 생성
+ * ‼ 랜덤 제거 → 슬러그 기반 결정적(deterministic) 선택으로 구글 색인 안정화
  */
 export function generateOptimizedTitle(
   trend: TrendItem,
   countryName: string,
   position?: number
 ): string {
-  // 순위가 높을수록 더 강한 표현 사용
-  const isTopTrend = position && position <= 5;
+  const isKorean = trend.country === "KR";
+  const traffic = trend.traffic ? ` ${trend.traffic}` : "";
 
-  if (isTopTrend) {
-    return `🔥 ${trend.title} - Trending #${position} in ${countryName} | Real-Time Trends`;
+  // 한국어 트렌드 → 한국어 제목 (60자 이하)
+  if (isKorean) {
+    if (position && position <= 3) {
+      return `${trend.title} 실검 ${position}위 왜 이슈?${traffic}`;
+    }
+    return `${trend.title} 왜 이슈? | 실시간 검색${traffic}`;
   }
 
-  const variants = [
-    `${trend.title} - Trending in ${countryName} | Real-Time Updates`,
-    `Why is ${trend.title} Trending in ${countryName}?`,
-    `${trend.title} - What's Happening in ${countryName}`,
-    `${trend.title} - Viral Topic in ${countryName}`,
-  ];
+  // 영어 트렌드
+  if (position && position <= 5) {
+    return `Why is ${trend.title} Trending? #${position} in ${countryName}`;
+  }
 
-  return variants[Math.floor(Math.random() * variants.length)];
+  // 슬러그 해시로 결정적 선택 (랜덤 제거)
+  const hash = (trend.slug || trend.title).split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  const variants = [
+    `Why is ${trend.title} Trending in ${countryName}?`,
+    `${trend.title} – What's Happening in ${countryName}`,
+    `${trend.title} Trending Now in ${countryName}`,
+  ];
+  return variants[hash % variants.length];
 }
 
 /**
  * 트렌드에 대한 최적화된 메타 설명 생성
- * 검색 결과에서 클릭을 유도하는 설명
+ * 검색 결과에서 클릭을 유도하는 설명 (한국어/영어 분리)
  */
 export function generateOptimizedDescription(
   trend: TrendItem,
   countryName: string,
   trafficInfo?: string
 ): string {
-  const baseDescription =
-    trend.summary ||
-    `${trend.title} is trending in ${countryName}. Get real-time insights, related searches, and trending context.`;
+  const isKorean = trend.country === "KR";
+  const traffic = trafficInfo || trend.traffic || "";
 
-  const withTraffic = trafficInfo
-    ? `${baseDescription} Search volume: ${trafficInfo}.`
-    : baseDescription;
-
-  // 최대 160자로 제한
-  if (withTraffic.length <= 160) {
-    return withTraffic;
+  if (isKorean) {
+    // 한국어: 검색량 + 요약 + 행동 유도
+    const trafficStr = traffic ? `${traffic} 검색 중. ` : "";
+    const summary = trend.summary
+      ? trend.summary.substring(0, 80)
+      : `${trend.title}이(가) 실시간 검색어 상위권에 올랐습니다.`;
+    const cta = " 관련 기사·영상 확인 →";
+    const full = `${trafficStr}${summary}${cta}`;
+    return full.length <= 160 ? full : full.substring(0, 157) + "...";
   }
 
-  return withTraffic.substring(0, 157) + "...";
+  // 영어: traffic + summary
+  const trafficStr = traffic ? `${traffic} searches. ` : "";
+  const summary = trend.summary
+    ? trend.summary.substring(0, 90)
+    : `${trend.title} is trending in ${countryName}. See why it's going viral.`;
+  const full = `${trafficStr}${summary}`;
+  return full.length <= 160 ? full : full.substring(0, 157) + "...";
 }
 
 /**

@@ -26,8 +26,8 @@ const nextConfig: NextConfig = {
           value: "nosniff",
         },
         {
-          key: "X-Frame-Options",
-          value: "DENY",
+          key: "Content-Security-Policy",
+          value: "frame-ancestors 'self' https://*.toss.im",
         },
         {
           key: "X-XSS-Protection",
@@ -73,8 +73,8 @@ const nextConfig: NextConfig = {
           value: "nosniff",
         },
         {
-          key: "X-Frame-Options",
-          value: "DENY",
+          key: "Content-Security-Policy",
+          value: "frame-ancestors 'self' https://*.toss.im",
         },
         {
           key: "X-XSS-Protection",
@@ -88,6 +88,14 @@ const nextConfig: NextConfig = {
         {
           key: "Cache-Control",
           value: "public, max-age=300",
+        },
+        {
+          key: "Access-Control-Allow-Origin",
+          value: "*",
+        },
+        {
+          key: "Access-Control-Allow-Methods",
+          value: "GET, OPTIONS",
         },
       ],
     },

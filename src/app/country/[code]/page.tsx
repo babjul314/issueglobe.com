@@ -2,9 +2,8 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { headers, cookies } from "next/headers";
 import { countries, getCountryByCode } from "@/data/countries";
-import { db } from "@/lib/firebase";
-import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
 import { TrendItem } from "@/lib/google-trends";
+import { getTrendsFromSources } from "@/lib/trend-source";
 import TrendCard from "@/components/TrendCard";
 import Link from "next/link";
 import { clusterTrendsBySemantic, buildSemanticRelations, generateEntitySchema } from "@/lib/semantic-clustering";
@@ -65,58 +64,64 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   // 실시간 트렌드 데이터 가져오기
   const trends = await getTrendsFromFirebase(country.code);
-  const topTrends = trends.slice(0, 3).map((t) => t.title);
-  const topKeyword = topTrends[0] || "";
+  const topTrends = trends.slice(0, 3);
+  const topKeyword = topTrends[0]?.title || "";
+  const topTraffic = topTrends[0]?.traffic || "";
 
-  // 동적 제목 생성 (1위 키워드 포함)
+  // 동적 제목 생성 — 60자 이하 유지로 SERP 잘림 방지
   let dynamicTitle = "";
   if (topKeyword) {
+    // 키워드가 길면 잘라서 제목 전체가 60자 넘지 않도록
+    const shortKey = topKeyword.length > 20 ? topKeyword.substring(0, 18) + "…" : topKeyword;
     const titleTemplates: Record<string, string> = {
-      KR: `실시간 이슈 1위: ${topKeyword} | 대한민국 이슈 순위 - IssueGlobe`,
-      JP: `日本1位: ${topKeyword} - リアルタイムトレンド | IssueGlobe`,
-      US: `#1 Trending in USA: ${topKeyword} | IssueGlobe`,
-      GB: `#1 Trending in UK: ${topKeyword} | IssueGlobe`,
-      DE: `#1 in Deutschland: ${topKeyword} | IssueGlobe`,
-      FR: `N°1 en France: ${topKeyword} | IssueGlobe`,
-      IT: `#1 in Italia: ${topKeyword} | IssueGlobe`,
-      ES: `#1 en España: ${topKeyword} | IssueGlobe`,
-      BR: `#1 no Brasil: ${topKeyword} | IssueGlobe`,
-      IN: `#1 Trending in India: ${topKeyword} | IssueGlobe`,
-      AU: `#1 Trending in Australia: ${topKeyword} | IssueGlobe`,
-      CA: `#1 Trending in Canada: ${topKeyword} | IssueGlobe`,
-      NL: `#1 in Nederland: ${topKeyword} | IssueGlobe`,
-      CH: `#1 in der Schweiz: ${topKeyword} | IssueGlobe`,
-      SE: `#1 in Sverige: ${topKeyword} | IssueGlobe`,
-      MX: `#1 en México: ${topKeyword} | IssueGlobe`,
-      NO: `#1 in Norge: ${topKeyword} | IssueGlobe`,
-      DK: `#1 in Danmark: ${topKeyword} | IssueGlobe`,
-      BE: `#1 in België: ${topKeyword} | IssueGlobe`,
-      AT: `#1 in Österreich: ${topKeyword} | IssueGlobe`,
-      IE: `#1 Trending in Ireland: ${topKeyword} | IssueGlobe`,
-      SG: `#1 Trending in Singapore: ${topKeyword} | IssueGlobe`,
-      IL: `#1 בישראל: ${topKeyword} | IssueGlobe`,
-      AE: `#1 في الإمارات: ${topKeyword} | IssueGlobe`,
-      NZ: `#1 Trending in New Zealand: ${topKeyword} | IssueGlobe`,
-      FI: `#1 in Suomi: ${topKeyword} | IssueGlobe`,
-      PL: `#1 w Polsce: ${topKeyword} | IssueGlobe`,
-      TW: `台灣1位: ${topKeyword} | IssueGlobe`,
-      SA: `#1 في السعودية: ${topKeyword} | IssueGlobe`,
-      HK: `香港1位: ${topKeyword} | IssueGlobe`,
+      KR: `'${shortKey}' 실검 1위 | 한국 실시간 이슈`,
+      JP: `日本1位: ${shortKey} | リアルタイムトレンド`,
+      US: `#1 in USA: ${shortKey} | Trending Now`,
+      GB: `#1 in UK: ${shortKey} | Trending Now`,
+      DE: `#1 in DE: ${shortKey} | Aktuelle Trends`,
+      FR: `N°1 en France: ${shortKey} | Tendances`,
+      IT: `#1 in Italia: ${shortKey} | Tendenze`,
+      ES: `#1 en España: ${shortKey} | Tendencias`,
+      BR: `#1 no Brasil: ${shortKey} | Trending`,
+      IN: `#1 in India: ${shortKey} | Trending Now`,
+      AU: `#1 in AU: ${shortKey} | Trending Now`,
+      CA: `#1 in CA: ${shortKey} | Trending Now`,
+      NL: `#1 in NL: ${shortKey} | Trending`,
+      CH: `#1 in CH: ${shortKey} | Trending`,
+      SE: `#1 in SE: ${shortKey} | Trending`,
+      MX: `#1 en MX: ${shortKey} | Tendencias`,
+      NO: `#1 in NO: ${shortKey} | Trending`,
+      DK: `#1 in DK: ${shortKey} | Trending`,
+      BE: `#1 in BE: ${shortKey} | Trending`,
+      AT: `#1 in AT: ${shortKey} | Trending`,
+      IE: `#1 in IE: ${shortKey} | Trending Now`,
+      SG: `#1 in SG: ${shortKey} | Trending Now`,
+      IL: `#1 בישראל: ${shortKey}`,
+      AE: `#1 الإمارات: ${shortKey}`,
+      NZ: `#1 in NZ: ${shortKey} | Trending Now`,
+      FI: `#1 in FI: ${shortKey} | Trending`,
+      PL: `#1 w PL: ${shortKey} | Trending`,
+      TW: `台灣1位: ${shortKey} | 即時熱搜`,
+      SA: `#1 السعودية: ${shortKey}`,
+      HK: `香港1位: ${shortKey} | 即時熱搜`,
     };
-    dynamicTitle = titleTemplates[country.code] || `#1 Trending in ${country.name}: ${topKeyword} | IssueGlobe`;
+    dynamicTitle = titleTemplates[country.code] || `#1 in ${country.name}: ${shortKey} | Trending`;
   }
 
   // 폴백: 동적 제목이 없으면 기존 정적 제목 사용
   const seo = getLocalizedMeta(country);
   const finalTitle = dynamicTitle || seo.title;
 
-  // 동적 설명 생성 - 현지 언어 + 실제 실검 키워드 노출로 CTR 향상
-  const t0 = topTrends[0] ?? "";
-  const t1 = topTrends[1] ?? "";
+  // 동적 설명 생성 - 검색량 수치 포함으로 클릭 유인 강화
+  const t0 = topTrends[0]?.title ?? "";
+  const t1 = topTrends[1]?.title ?? "";
   const has2 = topTrends.length >= 2;
+  const trafficStr = topTraffic ? ` ${topTraffic} 검색 중.` : "";
   const dynamicDescMap: Record<string, string> = {
     // 아시아
-    KR: has2 ? `지금 한국 이슈 1위 '${t0}', 2위 '${t1}' 등 TOP10 실시간 공개. 매시간 자동 업데이트 · 구글 트렌드 기반` : seo.description,
+    KR: has2
+      ? `지금 실검 1위 '${t0}'.${trafficStr} 2위 '${t1}' 급상승 중 → 전체 TOP10 실시간 확인`
+      : seo.description,
     JP: has2 ? `今のトレンド1位「${t0}」2位「${t1}」など TOP10公開中。毎時自動更新` : seo.description,
     TW: has2 ? `現在熱搜第1名「${t0}」第2名「${t1}」等 TOP10即時公開。每小時自動更新` : seo.description,
     HK: has2 ? `現在熱搜第1名「${t0}」第2名「${t1}」等 TOP10即時公開。每小時自動更新` : seo.description,
@@ -204,17 +209,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 async function getTrendsFromFirebase(countryCode: string): Promise<TrendItem[]> {
-  try {
-    // 국가 페이지: 오늘 데이터만 (최신 트렌드만 표시)
-    const today = new Date().toISOString().split("T")[0];
-    const trendsRef = collection(db, "trends", countryCode, today);
-    const q = query(trendsRef, orderBy("createdAt", "desc"), limit(10));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => doc.data() as TrendItem);
-  } catch (error) {
-    console.error("Firebase error:", error);
-    return [];
-  }
+  return getTrendsFromSources(countryCode, 10);
 }
 
 async function getUserLang(): Promise<string> {
@@ -291,6 +286,33 @@ export default async function CountryPage({ params }: PageProps) {
           )}
         </div>
       </section>
+
+      {/* ItemList JSON-LD: SERP에 트렌드 목록 리치 결과 표시 */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            name: country.code === "KR"
+              ? `${country.flag} 한국 실시간 이슈 TOP ${Math.min(trends.length, 10)}`
+              : `${country.flag} Trending in ${country.name} – TOP ${Math.min(trends.length, 10)}`,
+            description: country.code === "KR"
+              ? "지금 한국에서 가장 많이 검색되는 실시간 이슈 순위입니다. 매시간 자동 업데이트."
+              : `Real-time trending topics in ${country.name}. Updated every hour.`,
+            url: `https://issueglobe.com/country/${country.code.toLowerCase()}`,
+            numberOfItems: Math.min(trends.length, 10),
+            dateModified: new Date().toISOString(),
+            itemListElement: trends.slice(0, 10).map((t, i) => ({
+              "@type": "ListItem",
+              position: i + 1,
+              name: t.title,
+              url: `https://issueglobe.com/trend/${t.slug}`,
+              description: t.summary || t.description || t.title,
+            })),
+          }),
+        }}
+      />
 
       {/* KR 전용: 실시간 이슈 설명 섹션 (SEO용) */}
       {country.code === "KR" && (
