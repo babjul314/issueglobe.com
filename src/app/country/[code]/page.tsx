@@ -1,12 +1,10 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { headers, cookies } from "next/headers";
 import { countries, getCountryByCode } from "@/data/countries";
 import { TrendItem } from "@/lib/google-trends";
 import { getTrendsFromSources } from "@/lib/trend-source";
 import TrendCard from "@/components/TrendCard";
 import Link from "next/link";
-import { clusterTrendsBySemantic, buildSemanticRelations, generateEntitySchema } from "@/lib/semantic-clustering";
 
 export const revalidate = 60; // ISR: 60초마다 재검증
 
@@ -212,14 +210,6 @@ async function getTrendsFromFirebase(countryCode: string): Promise<TrendItem[]> 
   return getTrendsFromSources(countryCode, 10);
 }
 
-async function getUserLang(): Promise<string> {
-  // IP 기반 언어 감지 (쿠키 무시)
-  const headersList = await headers();
-  const detected = headersList.get("x-vercel-ip-country") || headersList.get("cf-ipcountry") || "KR";
-  const c = countries.find((c) => c.code === detected);
-  return c?.lang || "en";
-}
-
 export default async function CountryPage({ params }: PageProps) {
   const { code } = await params;
   const country = getCountryByCode(code);
@@ -228,7 +218,7 @@ export default async function CountryPage({ params }: PageProps) {
 
   const trends = await getTrendsFromFirebase(country.code);
   const ui = country.ui;
-  const userLang = await getUserLang();
+  const countryPageUrl = `https://issueglobe.com/country/${country.code.toLowerCase()}`;
 
   return (
     <>
@@ -300,79 +290,22 @@ export default async function CountryPage({ params }: PageProps) {
             description: country.code === "KR"
               ? "지금 한국에서 가장 많이 검색되는 실시간 이슈 순위입니다. 매시간 자동 업데이트."
               : `Real-time trending topics in ${country.name}. Updated every hour.`,
-            url: `https://issueglobe.com/country/${country.code.toLowerCase()}`,
+            url: countryPageUrl,
             numberOfItems: Math.min(trends.length, 10),
             dateModified: new Date().toISOString(),
             itemListElement: trends.slice(0, 10).map((t, i) => ({
               "@type": "ListItem",
               position: i + 1,
               name: t.title,
-              url: `https://issueglobe.com/trend/${t.slug}`,
-              description: t.summary || t.description || t.title,
+              item: {
+                "@type": "Thing",
+                "@id": `${countryPageUrl}#trend-${i + 1}`,
+                name: t.title,
+              },
             })),
           }),
         }}
       />
-
-      {/* KR 전용: 실시간 이슈 설명 섹션 (SEO용) */}
-      {country.code === "KR" && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="rounded-2xl bg-blue-50 border border-blue-100 p-5">
-            <h2 className="text-base font-bold text-blue-900 mb-2">대한민국 실시간 이슈란?</h2>
-            <p className="text-sm text-blue-800 leading-relaxed">
-              실시간 이슈는 지금 한국에서 가장 많이 검색되는 화제의 키워드입니다. IssueGlobe는 구글 트렌드 데이터를 기반으로 오늘의 이슈 순위를 매시간 자동 업데이트합니다. 지금 뜨는 이슈, 오늘 이슈 1위, 실시간 검색어 순위를 한눈에 확인하세요.
-            </p>
-          </div>
-        </section>
-      )}
-
-      {/* Semantic Insights - Topic Clustering */}
-      {trends.length > 3 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">
-              {country.code === "KR" ? "오늘의 이슈 주제 분류" : `Trending Themes in ${country.name}`}
-            </h2>
-            <p className="text-sm text-gray-600 mb-4">
-              {country.code === "KR"
-                ? "실시간 이슈를 주제별로 묶어 관련 트렌드를 한눈에 파악하세요."
-                : "Topics grouped by semantic relevance to help you discover related trends."}
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {clusterTrendsBySemantic(trends)
-                .slice(0, 4)
-                .map((cluster) => (
-                  <div
-                    key={cluster.id}
-                    className="rounded-lg bg-white border border-blue-100 p-4"
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-semibold text-gray-900">
-                        {cluster.theme}
-                      </h3>
-                      <span className="text-xs font-medium bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                        {cluster.trends.length} topic{cluster.trends.length !== 1 ? 's' : ''}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                      {cluster.description}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {cluster.keywords.slice(0, 3).map((keyword) => (
-                        <span
-                          key={keyword}
-                          className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-100"
-                        >
-                          {keyword}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Related Countries */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-16">
@@ -405,7 +338,7 @@ export default async function CountryPage({ params }: PageProps) {
             "@type": "CollectionPage",
             name: `${country.name} Trending Topics`,
             description: `Real-time trending topics in ${country.name} (${country.nameLocal}) updated hourly.`,
-            url: `https://issueglobe.com/country/${code.toLowerCase()}`,
+            url: countryPageUrl,
             inLanguage: country.lang,
             isAccessibleForFree: true,
             isPartOf: {
@@ -424,10 +357,12 @@ export default async function CountryPage({ params }: PageProps) {
                 "@type": "ListItem",
                 position: i + 1,
                 name: t.title,
-                url: `https://issueglobe.com/trend/${t.slug}`,
-                image: t.imageUrl || undefined,
-                datePublished: t.date,
-                keywords: [t.title],
+                item: {
+                  "@type": "Thing",
+                  "@id": `${countryPageUrl}#trend-${i + 1}`,
+                  name: t.title,
+                  keywords: [t.title],
+                },
               })),
             },
             breadcrumb: {
@@ -443,95 +378,13 @@ export default async function CountryPage({ params }: PageProps) {
                   "@type": "ListItem",
                   position: 2,
                   name: country.name,
-                  item: `https://issueglobe.com/country/${code.toLowerCase()}`,
+                  item: countryPageUrl,
                 },
               ],
             },
           }),
         }}
       />
-
-      {/* Semantic Relationships Schema - Knowledge Graph Optimization */}
-      {trends.length > 1 && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Thing",
-              "@id": `https://issueglobe.com/country/${code.toLowerCase()}`,
-              name: `Trending in ${country.name}`,
-              description: `Real-time trending topics in ${country.name}`,
-              hasPart: trends.slice(0, 15).map((t) => ({
-                "@type": "Thing",
-                "@id": `https://issueglobe.com/trend/${t.slug}`,
-                name: t.title,
-                url: `https://issueglobe.com/trend/${t.slug}`,
-              })),
-            }),
-          }}
-        />
-      )}
-
-      {/* KR 전용 FAQ 스키마 - "실시간 이슈" 검색 노출용 */}
-      {country.code === "KR" && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "FAQPage",
-              mainEntity: [
-                {
-                  "@type": "Question",
-                  name: "실시간 이슈란 무엇인가요?",
-                  acceptedAnswer: {
-                    "@type": "Answer",
-                    text: "실시간 이슈는 지금 이 순간 한국에서 가장 많이 검색되는 화제의 키워드와 뉴스입니다. IssueGlobe는 구글 트렌드 데이터를 분석해 매시간 실시간 이슈 순위를 업데이트합니다.",
-                  },
-                },
-                {
-                  "@type": "Question",
-                  name: "오늘의 이슈는 무엇인가요?",
-                  acceptedAnswer: {
-                    "@type": "Answer",
-                    text: `오늘의 이슈는 ${trends.slice(0, 3).map(t => t.title).join(", ")} 등입니다. 위 목록에서 현재 실시간 이슈 순위 전체를 확인하세요.`,
-                  },
-                },
-                {
-                  "@type": "Question",
-                  name: "지금 뜨는 이슈는 어디서 확인하나요?",
-                  acceptedAnswer: {
-                    "@type": "Answer",
-                    text: "IssueGlobe(issueglobe.com/country/kr)에서 대한민국 실시간 이슈를 매시간 업데이트로 확인할 수 있습니다. 구글 트렌드 기반으로 자동 수집됩니다.",
-                  },
-                },
-                {
-                  "@type": "Question",
-                  name: "한국 실시간 이슈 순위는 어떻게 만들어지나요?",
-                  acceptedAnswer: {
-                    "@type": "Answer",
-                    text: "구글 트렌드(Google Trends) 데이터를 기반으로 시간별 검색량 증가율을 분석하여 실시간 이슈 순위를 산정합니다. 매시간 자동으로 크롤링·업데이트됩니다.",
-                  },
-                },
-              ],
-            }),
-          }}
-        />
-      )}
-
-      {/* Entity-based Schema for top trends */}
-      {trends.slice(0, 5).map((trend) => (
-        <script
-          key={`entity-${trend.slug}`}
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(
-              generateEntitySchema(trend, country.code, trends.slice(0, 5).filter((t) => t.slug !== trend.slug), country.lang)
-            ),
-          }}
-        />
-      ))}
     </>
   );
 }

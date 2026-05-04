@@ -5,35 +5,41 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: ["/", "/country/", "/trend/", "/_next/image", "/_next/static"],
-        disallow: ["/api/", "/private/"],
+        allow: ["/", "/country/", "/_next/image", "/_next/static"],
+        disallow: ["/api/", "/private/", "/trend/"],
       },
       {
         userAgent: "Googlebot",
         allow: ["/", "/_next/image", "/_next/static"],
+        disallow: ["/api/", "/private/", "/trend/"],
       },
       {
         userAgent: "Googlebot-Image",
         allow: ["/", "/_next/image"],
+        disallow: ["/api/", "/private/", "/trend/"],
       },
       {
         userAgent: "Bingbot",
         allow: ["/", "/_next/image", "/_next/static"],
+        disallow: ["/api/", "/private/", "/trend/"],
       },
       // 네이버 크롤러 (실제 봇 이름: Yeti)
       {
         userAgent: "Yeti",
         allow: ["/", "/_next/image", "/_next/static"],
+        disallow: ["/api/", "/private/", "/trend/"],
         crawlDelay: 1,
       },
       // 다음/카카오 크롤러
       {
         userAgent: "Daum",
         allow: ["/", "/_next/image", "/_next/static"],
+        disallow: ["/api/", "/private/", "/trend/"],
       },
       {
         userAgent: "Yandex",
         allow: ["/", "/_next/image", "/_next/static"],
+        disallow: ["/api/", "/private/", "/trend/"],
       },
       // AI 크롤러 차단
       {
@@ -49,10 +55,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/"],
       },
     ],
-    sitemap: [
-      "https://issueglobe.com/sitemap.xml",
-      "https://issueglobe.com/sitemap-news.xml",
-    ],
+    sitemap: ["https://issueglobe.com/sitemap.xml"],
     host: "https://issueglobe.com",
   };
 }

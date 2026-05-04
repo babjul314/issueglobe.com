@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { countries } from "@/data/countries";
+import { getGeminiSearchUrl } from "@/lib/gemini";
 
 interface SearchResult {
   title: string;
@@ -19,7 +19,6 @@ export default function TrendSearch() {
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
 
   useEffect(() => {
     if (!query.trim() || query.length < 2) {
@@ -63,7 +62,7 @@ export default function TrendSearch() {
       setQuery("");
     }
     if (e.key === "Enter" && results.length > 0) {
-      router.push(`/trend/${results[0].slug}`);
+      window.open(getGeminiSearchUrl(results[0]), "_blank", "noopener,noreferrer");
       setIsOpen(false);
     }
   }
@@ -125,7 +124,9 @@ export default function TrendSearch() {
           {results.map((result, i) => (
             <a
               key={result.slug}
-              href={`/trend/${result.slug}`}
+              href={getGeminiSearchUrl(result)}
+              target="_blank"
+              rel="noopener noreferrer"
               role="option"
               aria-selected={i === 0}
               onClick={() => setIsOpen(false)}

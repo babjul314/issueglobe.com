@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { TrendItem } from "@/lib/google-trends";
 import { getCountryByCode } from "@/data/countries";
 import { decodeHtml } from "@/lib/utils";
+import { getGeminiSearchUrl } from "@/lib/gemini";
 
 interface TrendCardProps {
   trend: TrendItem;
@@ -10,11 +10,15 @@ interface TrendCardProps {
 
 export default function TrendCard({ trend, rank }: TrendCardProps) {
   const country = getCountryByCode(trend.country);
+  const title = decodeHtml(trend.title);
 
   return (
-    <Link
-      href={`/trend/${trend.slug}`}
+    <a
+      href={getGeminiSearchUrl(trend)}
+      target="_blank"
+      rel="noopener noreferrer"
       className="group block rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm transition-all hover:shadow-xl hover:border-gray-300 hover:-translate-y-0.5"
+      aria-label={`Search ${title} in Gemini`}
     >
       <div className="flex flex-col sm:flex-row">
         {/* Left: Rank only. Remote RSS images are intentionally not shown in ranking lists. */}
@@ -50,41 +54,15 @@ export default function TrendCard({ trend, rank }: TrendCardProps) {
             </span>
           </div>
 
-          {/* Title */}
-          <h3 className="font-black text-gray-900 group-hover:text-blue-600 transition-colors text-xl mb-2 leading-tight break-words">
-            {decodeHtml(trend.title)}
+          <h3 className="font-black text-gray-900 group-hover:text-blue-600 transition-colors text-xl leading-tight break-words">
+            {title}
           </h3>
 
-          {/* Summary or Description */}
-          {(trend.summary || trend.description) && (
-            <p className="text-sm text-gray-600 leading-relaxed line-clamp-2 mb-3">
-              {decodeHtml(trend.summary || trend.description)}
-            </p>
-          )}
-
-          {/* Reactions preview */}
-          {trend.reactions && (
-            <div className="flex items-start gap-2 bg-amber-50 rounded-lg px-3 py-2 mb-3">
-              <span className="text-sm shrink-0">💬</span>
-              <p className="text-xs text-amber-800 line-clamp-1">
-                {decodeHtml(trend.reactions)}
-              </p>
-            </div>
-          )}
-
-          {/* Tags */}
-          <div className="flex flex-wrap gap-1.5">
-            {trend.relatedQueries.slice(0, 3).map((q) => (
-              <span
-                key={q}
-                className="inline-block rounded-full bg-gray-100 px-2.5 py-0.5 text-xs text-gray-600 font-medium max-w-[160px] truncate"
-              >
-                {decodeHtml(q)}
-              </span>
-            ))}
-          </div>
+          <span className="mt-3 inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600 group-hover:bg-blue-50 group-hover:text-blue-700 transition-colors">
+            Gemini Search
+          </span>
         </div>
       </div>
-    </Link>
+    </a>
   );
 }
