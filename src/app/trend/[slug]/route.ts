@@ -1,21 +1,21 @@
 import { NextResponse } from "next/server";
-import { getGeminiSearchUrl, getTrendTitleFromSlug } from "@/lib/gemini";
+import { getGoogleSearchUrl, getTrendTitleFromSlug } from "@/lib/search";
 
 type TrendRouteContext = {
   params: Promise<{ slug: string }>;
 };
 
-async function redirectToGemini({ params }: TrendRouteContext) {
+async function redirectToGoogleSearch({ params }: TrendRouteContext) {
   const { slug } = await params;
   const title = getTrendTitleFromSlug(slug);
 
-  return NextResponse.redirect(getGeminiSearchUrl(title), 307);
+  return NextResponse.redirect(getGoogleSearchUrl(title), 307);
 }
 
 export async function GET(_request: Request, context: TrendRouteContext) {
-  return redirectToGemini(context);
+  return redirectToGoogleSearch(context);
 }
 
 export async function HEAD(_request: Request, context: TrendRouteContext) {
-  return redirectToGemini(context);
+  return redirectToGoogleSearch(context);
 }

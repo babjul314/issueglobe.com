@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { countries } from "@/data/countries";
-import { getGeminiSearchUrl } from "@/lib/gemini";
+import { getGoogleSearchUrl } from "@/lib/search";
 
 interface SearchResult {
   title: string;
@@ -62,7 +62,7 @@ export default function TrendSearch() {
       setQuery("");
     }
     if (e.key === "Enter" && results.length > 0) {
-      window.open(getGeminiSearchUrl(results[0]), "_blank", "noopener,noreferrer");
+      window.open(getGoogleSearchUrl(results[0]), "_blank", "noopener,noreferrer");
       setIsOpen(false);
     }
   }
@@ -124,7 +124,7 @@ export default function TrendSearch() {
           {results.map((result, i) => (
             <a
               key={result.slug}
-              href={getGeminiSearchUrl(result)}
+              href={getGoogleSearchUrl(result)}
               target="_blank"
               rel="noopener noreferrer"
               role="option"
